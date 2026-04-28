@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dorm Management System - Records</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandBlue: "#1f5eff",
+            brandLight: "#eaf1ff",
+            slateText: "#1f2a44"
+          },
+          boxShadow: {
+            panel: "0 10px 30px rgba(31, 94, 255, 0.12)"
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --sidebar-border: #dbe7ff;
+      --hover-blue: #edf3ff;
+      --active-blue: #dfe9ff;
+      --text-main: #1f2a44;
+      --text-soft: #5f6f91;
+    }
+    body { font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }
+    .shadcn-card {
+      background: #ffffff;
+      border: 1px solid #e6ecff;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+    .sidebar-shell {
+      background: #ffffff;
+      border-right: 1px solid var(--sidebar-border);
+      color: var(--text-main);
+    }
+    .sidebar-card {
+      border: 1px solid #dbe7ff;
+      background: linear-gradient(180deg, #ffffff 0%, #f5f9ff 100%);
+      border-radius: 12px;
+    }
+    .menu-label {
+      color: var(--text-soft);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .menu-link {
+      display: flex;
+      align-items: center;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      transition: all 0.2s ease;
+      border: 1px solid #dbe7ff;
+    }
+    .menu-link:hover {
+      background: var(--hover-blue);
+      color: var(--brandBlue);
+    }
+    .menu-link.active {
+      background: linear-gradient(90deg, #1f66ff 0%, #2c72ff 100%);
+      color: #ffffff;
+      border-color: #4f8cff;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 6px 18px rgba(44, 114, 255, 0.35);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-white to-blue-50 text-slateText">
+  <div class="relative flex min-h-screen">
+    <aside id="app-sidebar" class="sidebar-shell fixed inset-y-0 left-0 z-40 w-80 -translate-x-full shadow-panel transition-transform duration-200 lg:static lg:translate-x-0 flex flex-col justify-between">
+      <div class="p-6">
+        <div class="sidebar-card mb-7 p-4">
+          <h1 class="text-base font-semibold leading-tight text-brandBlue">Dorm Management System</h1>
+        </div>
+        <nav aria-label="Sidebar menu">
+          <p class="menu-label mb-2 px-2">Overview</p>
+          <ul class="space-y-1.5">
+            <li><a href="dashboard.html" class="menu-link">DASHBOARD</a></li>
+            <li><a href="records.html" class="menu-link active">RECORDS</a></li>
+            <li><a href="logs.html" class="menu-link">TRANSACTION LOGS</a></li>
+            <li><a href="renter.html" class="menu-link">TENANTS DATA</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="border-t border-[var(--sidebar-border)] p-6">
+        <div class="sidebar-card p-3">
+          <div class="mb-3 flex items-center gap-3">
+            <div id="avatar-badge" class="grid h-10 w-10 place-items-center rounded-full bg-brandLight text-sm font-bold text-brandBlue">U</div>
+            <div class="min-w-0">
+              <p id="sidebar-username" class="truncate text-sm font-semibold text-[var(--text-main)]">(Username)</p>
+              <p class="text-xs text-[var(--text-soft)]">Dormitory Staff</p>
+            </div>
+          </div>
+          <button id="logout-btn" class="w-full rounded-lg border border-blue-200 bg-white px-4 py-2.5 text-sm font-semibold text-brandBlue transition hover:bg-brandLight">Logout</button>
+        </div>
+      </div>
+    </aside>
+    <div id="sidebar-overlay" class="fixed inset-0 z-30 hidden bg-slate-900/35 lg:hidden"></div>
+    <main class="flex-1 w-full p-4 sm:p-6 lg:p-8">
+      <div class="mb-4 flex items-center justify-between lg:hidden">
+        <button id="sidebar-toggle" type="button" class="rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm font-semibold text-brandBlue">☰ Menu</button>
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Records</p>
+      </div>
+      <section class="rounded-2xl border border-blue-100 bg-white p-6 shadow-panel">
+        <div class="mb-4 flex items-center justify-between gap-3">
+          <h2 class="text-xl font-semibold text-brandBlue">Payment Records</h2>
+          <input id="records-search" type="text" placeholder="Search room number or renter name..." class="w-full max-w-sm rounded-lg border border-blue-200 px-3 py-2 text-sm outline-none focus:border-blue-400">
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full border-separate border-spacing-0 rounded-xl border border-blue-100">
+            <thead>
+              <tr class="bg-blue-50 text-left text-sm font-semibold uppercase tracking-wide text-slate-600">
+                <th class="border-b border-blue-100 px-4 py-3">Room Number</th>
+                <th class="border-b border-blue-100 px-4 py-3">Renter Name</th>
+                <th class="border-b border-blue-100 px-4 py-3">Payment Schedule</th>
+                <th class="border-b border-blue-100 px-4 py-3">Payables</th>
+                <th class="border-b border-blue-100 px-4 py-3">Status</th>
+                <th class="border-b border-blue-100 px-4 py-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="records-table-body" class="bg-white text-sm text-slate-700">
+              <tr id="records-empty-row">
+                <td colspan="6" class="px-4 py-7 text-center text-sm text-slate-500">No renters found. Add renters first in <strong>TENANTS</strong>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p id="records-no-results" class="mt-3 hidden text-sm text-slate-500">No matching records found.</p>
+      </section>
+    </main>
+  </div>
+  <div id="logout-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 px-4">
+    <div class="w-full max-w-sm rounded-2xl border border-blue-100 bg-white p-6 shadow-panel">
+      <h3 class="text-lg font-semibold text-brandBlue">Confirm Logout</h3>
+      <p class="mt-2 text-sm text-[var(--text-soft)]">Are you sure you want to logout from the Dorm Management System?</p>
+      <div class="mt-5 flex justify-end gap-2">
+        <button id="cancel-logout" class="rounded-lg border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-[var(--text-main)] hover:bg-blue-50">Cancel</button>
+        <button id="confirm-logout" class="rounded-lg bg-brandBlue px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Logout</button>
+      </div>
+    </div>
+  </div>
+  <div id="payment-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 px-4">
+    <div class="w-full max-w-md rounded-2xl border border-blue-100 bg-white p-6 shadow-panel">
+      <h3 class="text-lg font-semibold text-brandBlue">Record Payment</h3>
+      <p id="payment-modal-name" class="mt-1 text-sm text-[var(--text-soft)]">Renter</p>
+      <div class="mt-4 space-y-3">
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">Cash Payment</label>
+          <input id="payment-cash-input" type="number" min="0" step="0.01" placeholder="Cash Payment Amount (PHP)" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">Mode Of Payment</label>
+          <select id="payment-mode-input" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+            <option value="Cash">Cash</option>
+            <option value="Gcash">Gcash</option>
+          </select>
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">Status (Auto)</label>
+          <input id="payment-status-auto" readonly value="PAID" class="w-full rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-sm font-semibold text-brandBlue outline-none">
+        </div>
+        <div id="payment-balance-wrap" class="hidden">
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">Amount Balance to Pay</label>
+          <input id="payment-balance-input" readonly type="number" min="0" step="0.01" placeholder="Balance Amount (PHP)" class="w-full rounded-lg border border-blue-200 bg-slate-50 px-3 py-2.5 text-sm outline-none">
+        </div>
+      </div>
+      <div class="mt-5 flex justify-end gap-2">
+        <button id="cancel-payment" class="rounded-lg border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-[var(--text-main)] hover:bg-blue-50">Cancel</button>
+        <button id="save-payment" class="rounded-lg bg-brandBlue px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Save</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    const RENTERS_STORAGE_KEY = "dmsRenters";
+    const TRANSACTIONS_STORAGE_KEY = "dmsTransactions";
+    const userNameLabel = document.getElementById("sidebar-username");
+    const avatarBadge = document.getElementById("avatar-badge");
+    const appSidebar = document.getElementById("app-sidebar");
+    const sidebarToggle = document.getElementById("sidebar-toggle");
+    const sidebarOverlay = document.getElementById("sidebar-overlay");
+    const logoutBtn = document.getElementById("logout-btn");
+    const logoutModal = document.getElementById("logout-modal");
+    const cancelLogoutBtn = document.getElementById("cancel-logout");
+    const confirmLogoutBtn = document.getElementById("confirm-logout");
+    const recordsSearch = document.getElementById("records-search");
+    const recordsTableBody = document.getElementById("records-table-body");
+    const recordsEmptyRow = document.getElementById("records-empty-row");
+    const recordsNoResults = document.getElementById("records-no-results");
+    const paymentModal = document.getElementById("payment-modal");
+    const paymentModalName = document.getElementById("payment-modal-name");
+    const paymentCashInput = document.getElementById("payment-cash-input");
+    const paymentModeInput = document.getElementById("payment-mode-input");
+    const paymentStatusAutoInput = document.getElementById("payment-status-auto");
+    const paymentBalanceWrap = document.getElementById("payment-balance-wrap");
+    const paymentBalanceInput = document.getElementById("payment-balance-input");
+    const cancelPaymentBtn = document.getElementById("cancel-payment");
+    const savePaymentBtn = document.getElementById("save-payment");
+    let activeRenterIndex = null;
+    const savedUsername = localStorage.getItem("dmsUsername");
+    if (savedUsername && savedUsername.trim()) {
+      const cleanUsername = savedUsername.trim();
+      userNameLabel.textContent = cleanUsername;
+      avatarBadge.textContent = cleanUsername.charAt(0).toUpperCase();
+    }
+    function openSidebar() {
+      appSidebar.classList.remove("-translate-x-full");
+      sidebarOverlay.classList.remove("hidden");
+    }
+    function closeSidebar() {
+      appSidebar.classList.add("-translate-x-full");
+      sidebarOverlay.classList.add("hidden");
+    }
+    sidebarToggle.addEventListener("click", function () {
+      const isHidden = appSidebar.classList.contains("-translate-x-full");
+      if (isHidden) openSidebar();
+      else closeSidebar();
+    });
+    sidebarOverlay.addEventListener("click", closeSidebar);
+    appSidebar.querySelectorAll("a.menu-link").forEach(function (link) {
+      link.addEventListener("click", closeSidebar);
+    });
+    window.addEventListener("resize", function () {
+      if (window.innerWidth >= 1024) sidebarOverlay.classList.add("hidden");
+    });
+    logoutBtn.addEventListener("click", function () {
+      logoutModal.classList.remove("hidden");
+      logoutModal.classList.add("flex");
+    });
+    cancelLogoutBtn.addEventListener("click", function () {
+      logoutModal.classList.add("hidden");
+      logoutModal.classList.remove("flex");
+    });
+    confirmLogoutBtn.addEventListener("click", function () {
+      window.location.href = "index.html";
+    });
+
+    function getStatusBadge(status) {
+      if (status === "PAID") return '<span class="inline-flex rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700">PAID</span>';
+      if (status === "PARTIAL") return '<span class="inline-flex rounded-full bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-700">PARTIAL</span>';
+      return '<span class="inline-flex rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700">NOT PAID</span>';
+    }
+
+    function formatDateLabel(value) {
+      if (!value) return "-";
+      const date = new Date(value + "T00:00:00");
+      if (Number.isNaN(date.getTime())) return value;
+      return date.toLocaleDateString("en-PH", { month: "long", day: "numeric" });
+    }
+
+    function formatPeso(value) {
+      const amount = Number(value);
+      if (Number.isNaN(amount)) return "-";
+      return "PHP " + amount.toFixed(2);
+    }
+
+    function getAmount(value) {
+      const amount = Number(value);
+      return Number.isFinite(amount) ? amount : 0;
+    }
+
+    function extractAdditionalChargesTotal(value) {
+      if (!value || value === "-") return 0;
+      const matches = String(value).match(/PHP\s*([0-9]+(?:\.[0-9]+)?)/gi) || [];
+      return matches.reduce(function (total, part) {
+        const numeric = Number(part.replace(/[^0-9.]/g, ""));
+        return total + (Number.isFinite(numeric) ? numeric : 0);
+      }, 0);
+    }
+
+    function computePayables(renter) {
+      const monthlyRent = getAmount(renter.roomRentRaw);
+      const water = renter.waterType === "Included" ? 0 : getAmount(renter.waterAmount);
+      const light = renter.lightType === "Included" ? 0 : getAmount(renter.lightAmount);
+      const additionalCharges = extractAdditionalChargesTotal(renter.optionalCharges);
+      const total = monthlyRent + water + light + additionalCharges;
+      return { monthlyRent, water, light, additionalCharges, total };
+    }
+
+    function getRenters() {
+      try {
+        const raw = localStorage.getItem(RENTERS_STORAGE_KEY);
+        const data = raw ? JSON.parse(raw) : [];
+        return Array.isArray(data) ? data : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function setRenters(renters) {
+      localStorage.setItem(RENTERS_STORAGE_KEY, JSON.stringify(renters));
+    }
+
+    function getTransactions() {
+      try {
+        const raw = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
+        const data = raw ? JSON.parse(raw) : [];
+        return Array.isArray(data) ? data : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function setTransactions(transactions) {
+      localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify(transactions));
+    }
+
+    function appendTransactionLog(entry) {
+      const transactions = getTransactions();
+      transactions.unshift(entry);
+      setTransactions(transactions);
+    }
+
+    function renderRecordsTable() {
+      const renters = getRenters();
+      recordsTableBody.innerHTML = "";
+      if (!renters.length) {
+        recordsTableBody.appendChild(recordsEmptyRow);
+        recordsNoResults.classList.add("hidden");
+        return;
+      }
+
+      renters.forEach(function (renter, index) {
+        const tr = document.createElement("tr");
+        tr.dataset.recordRow = "true";
+        tr.dataset.search = `${renter.roomNumber || ""} ${renter.renterName || ""}`.toLowerCase();
+        const paymentStatus = renter.paymentStatus || "NOT PAID";
+        const payables = computePayables(renter);
+        tr.innerHTML = `
+          <td class="border-t border-blue-100 px-4 py-3 text-sm text-slate-600">${renter.roomNumber || "-"}</td>
+          <td class="border-t border-blue-100 px-4 py-3"><p class="whitespace-pre-line font-semibold text-slate-800">${renter.renterName || "-"}</p></td>
+          <td class="border-t border-blue-100 px-4 py-3 text-sm text-slate-600">${formatDateLabel(renter.paymentScheduleRaw)}</td>
+          <td class="border-t border-blue-100 px-4 py-3 text-xs text-slate-600">
+            <p>Monthly Rent: <span class="font-semibold">${formatPeso(payables.monthlyRent)}</span></p>
+            <p>Water: <span class="font-semibold">${formatPeso(payables.water)}</span></p>
+            <p>Light: <span class="font-semibold">${formatPeso(payables.light)}</span></p>
+            <p>Additional Charges: <span class="font-semibold">${formatPeso(payables.additionalCharges)}</span></p>
+            <p class="mt-1">TOTAL: <span class="font-semibold text-brandBlue">${formatPeso(payables.total)}</span></p>
+          </td>
+          <td class="border-t border-blue-100 px-4 py-3">${getStatusBadge(paymentStatus)}</td>
+          <td class="border-t border-blue-100 px-4 py-3">
+            <button type="button" class="record-payment rounded-md border border-blue-200 bg-white px-3 py-1.5 text-sm font-semibold text-brandBlue hover:bg-blue-50">Record Payment</button>
+          </td>
+        `;
+        tr.querySelector(".record-payment").addEventListener("click", function () {
+          activeRenterIndex = index;
+          paymentModalName.textContent = `${renter.renterName || "Renter"} | Room ${renter.roomNumber || "-"}`;
+          paymentCashInput.value = renter.paymentCash || "";
+          paymentModeInput.value = renter.paymentMode || "Cash";
+          paymentBalanceInput.value = renter.paymentBalance || "";
+          refreshAutoStatus(renter);
+          paymentModal.classList.remove("hidden");
+          paymentModal.classList.add("flex");
+        });
+        recordsTableBody.appendChild(tr);
+      });
+      applySearch();
+    }
+
+    function applySearch() {
+      const query = recordsSearch.value.trim().toLowerCase();
+      const rows = recordsTableBody.querySelectorAll('tr[data-record-row="true"]');
+      let visible = 0;
+      rows.forEach(function (row) {
+        const match = !query || (row.dataset.search || "").includes(query);
+        row.classList.toggle("hidden", !match);
+        if (match) visible += 1;
+      });
+      recordsNoResults.classList.toggle("hidden", !(query && visible === 0));
+    }
+
+    function refreshAutoStatus(renter) {
+      if (!renter) return;
+      const payables = computePayables(renter);
+      const cashPayment = getAmount(paymentCashInput.value);
+      const isPartial = cashPayment < payables.total;
+      const balance = Math.max(payables.total - cashPayment, 0);
+      paymentStatusAutoInput.value = isPartial ? "PARTIAL" : "PAID";
+      paymentBalanceWrap.classList.toggle("hidden", !isPartial);
+      paymentBalanceInput.value = isPartial ? String(balance.toFixed(2)) : "";
+    }
+
+    function closePaymentModal() {
+      paymentModal.classList.add("hidden");
+      paymentModal.classList.remove("flex");
+      paymentCashInput.value = "";
+      paymentModeInput.value = "Cash";
+      paymentStatusAutoInput.value = "PAID";
+      paymentBalanceInput.value = "";
+      paymentBalanceWrap.classList.add("hidden");
+      activeRenterIndex = null;
+    }
+
+    recordsSearch.addEventListener("input", applySearch);
+    paymentCashInput.addEventListener("input", function () {
+      if (activeRenterIndex === null) return;
+      const renters = getRenters();
+      const renter = renters[activeRenterIndex];
+      if (!renter) return;
+      refreshAutoStatus(renter);
+    });
+    cancelPaymentBtn.addEventListener("click", closePaymentModal);
+    savePaymentBtn.addEventListener("click", function () {
+      if (activeRenterIndex === null) return;
+      const renters = getRenters();
+      const renter = renters[activeRenterIndex];
+      if (!renter) return;
+      const payables = computePayables(renter);
+      const cashPayment = getAmount(paymentCashInput.value);
+      const shouldForcePartial = cashPayment < payables.total;
+      const finalStatus = shouldForcePartial ? "PARTIAL" : "PAID";
+      const balance = Math.max(payables.total - cashPayment, 0);
+      renter.paymentCash = paymentCashInput.value;
+      renter.paymentMode = paymentModeInput.value;
+      renter.paymentStatus = finalStatus;
+      renter.paymentBalance = finalStatus === "PARTIAL" ? String(balance.toFixed(2)) : "";
+      appendTransactionLog({
+        id: Date.now() + "-" + Math.random().toString(16).slice(2),
+        timestamp: new Date().toLocaleString("en-PH", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
+        }),
+        renterName: renter.renterName || "Renter",
+        roomNumber: renter.roomNumber || "-",
+        modeOfPayment: renter.paymentMode,
+        cashPayment: String(cashPayment.toFixed(2)),
+        totalPayable: String(payables.total.toFixed(2)),
+        status: finalStatus,
+        balance: finalStatus === "PARTIAL" ? String(balance.toFixed(2)) : "0.00"
+      });
+      setRenters(renters);
+      closePaymentModal();
+      renderRecordsTable();
+    });
+
+    renderRecordsTable();
+  </script>
+</body>
+</html>

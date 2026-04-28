@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dorm Management System - Add New Renter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandBlue: "#1f5eff",
+            brandLight: "#eaf1ff",
+            slateText: "#1f2a44"
+          },
+          boxShadow: {
+            panel: "0 10px 30px rgba(31, 94, 255, 0.12)"
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --sidebar-border: #dbe7ff;
+      --hover-blue: #edf3ff;
+      --active-blue: #dfe9ff;
+      --text-main: #1f2a44;
+      --text-soft: #5f6f91;
+    }
+    body { font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }
+    .shadcn-card {
+      background: #ffffff;
+      border: 1px solid #e6ecff;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+    .sidebar-shell {
+      background: #ffffff;
+      border-right: 1px solid var(--sidebar-border);
+      color: var(--text-main);
+    }
+    .sidebar-card {
+      border: 1px solid #dbe7ff;
+      background: linear-gradient(180deg, #ffffff 0%, #f5f9ff 100%);
+      border-radius: 12px;
+    }
+    .menu-label {
+      color: var(--text-soft);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .menu-link {
+      display: flex;
+      align-items: center;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      transition: all 0.2s ease;
+      border: 1px solid #dbe7ff;
+    }
+    .menu-link:hover {
+      background: var(--hover-blue);
+      color: var(--brandBlue);
+    }
+    .menu-link.active {
+      background: linear-gradient(90deg, #1f66ff 0%, #2c72ff 100%);
+      color: #ffffff;
+      border-color: #4f8cff;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 6px 18px rgba(44, 114, 255, 0.35);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-white to-blue-50 text-slateText">
+  <div class="relative flex min-h-screen">
+    <aside id="app-sidebar" class="sidebar-shell fixed inset-y-0 left-0 z-40 w-80 -translate-x-full shadow-panel transition-transform duration-200 lg:static lg:translate-x-0 flex flex-col justify-between">
+      <div class="p-6">
+        <div class="sidebar-card mb-7 p-4">
+          <h1 class="text-base font-semibold leading-tight text-brandBlue">Dorm Management System</h1>
+        </div>
+        <nav aria-label="Sidebar menu">
+          <p class="menu-label mb-2 px-2">Overview</p>
+          <ul class="space-y-1.5">
+            <li><a href="dashboard.html" class="menu-link">DASHBOARD</a></li>
+            <li><a href="records.html" class="menu-link">RECORDS</a></li>
+            <li><a href="logs.html" class="menu-link">TRANSACTION LOGS</a></li>
+            <li><a href="renter.html" class="menu-link active">TENANTS DATA</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="border-t border-[var(--sidebar-border)] p-6">
+        <div class="sidebar-card p-3">
+          <div class="mb-3 flex items-center gap-3">
+            <div id="avatar-badge" class="grid h-10 w-10 place-items-center rounded-full bg-brandLight text-sm font-bold text-brandBlue">U</div>
+            <div class="min-w-0">
+              <p id="sidebar-username" class="truncate text-sm font-semibold text-[var(--text-main)]">(Username)</p>
+              <p class="text-xs text-[var(--text-soft)]">Dormitory Staff</p>
+            </div>
+          </div>
+          <button id="logout-btn" class="w-full rounded-lg border border-blue-200 bg-white px-4 py-2.5 text-sm font-semibold text-brandBlue transition hover:bg-brandLight">Logout</button>
+        </div>
+      </div>
+    </aside>
+    <div id="sidebar-overlay" class="fixed inset-0 z-30 hidden bg-slate-900/35 lg:hidden"></div>
+    <main class="flex-1 w-full p-4 sm:p-6 lg:p-8">
+      <div class="mb-4 flex items-center justify-between lg:hidden">
+        <button id="sidebar-toggle" type="button" class="rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm font-semibold text-brandBlue">☰ Menu</button>
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Tenants Data</p>
+      </div>
+      <section class="rounded-2xl border border-blue-100 bg-white p-6 shadow-panel">
+        <div class="mb-5 flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-brandBlue">Renter List</h3>
+          <button id="open-renter-modal" class="rounded-lg bg-brandBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">Add Renter</button>
+        </div>
+        <div class="mb-4">
+          <input id="renter-search" type="text" placeholder="Search renter name or room number..." class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full border-separate border-spacing-0 rounded-xl border border-blue-100">
+            <thead>
+              <tr class="bg-blue-50 text-left text-sm font-semibold uppercase tracking-wide text-slate-600">
+                <th class="border-b border-blue-100 px-4 py-3">Room Number</th>
+                <th class="border-b border-blue-100 px-4 py-3">Renter Name</th>
+                <th class="border-b border-blue-100 px-4 py-3">Payment Schedule</th>
+                <th class="border-b border-blue-100 px-4 py-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="renter-table-body" class="bg-white text-base text-slate-700">
+              <tr id="empty-row">
+                <td colspan="4" class="px-4 py-7 text-center text-sm text-slate-500">No renter added yet. Click <strong>Add Renter</strong> to create one.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p id="no-search-results" class="mt-3 hidden text-sm text-slate-500">No matching renter found.</p>
+      </section>
+    </main>
+  </div>
+  <div id="renter-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 px-4 py-8">
+    <div class="max-h-full w-full max-w-5xl overflow-y-auto rounded-2xl border border-blue-100 bg-white p-6 shadow-panel">
+      <div class="mb-5 flex items-start justify-between">
+        <div>
+          <h3 class="text-xl font-semibold text-brandBlue">Renter Details Form</h3>
+          <p class="mt-1 text-sm text-[var(--text-soft)]">Fill out renter info, emergency contact, and room terms.</p>
+        </div>
+        <button id="close-renter-modal" class="rounded-lg border border-blue-200 px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-blue-50">Close</button>
+      </div>
+
+      <form id="renter-form" class="space-y-6">
+        <section class="rounded-xl border border-blue-100 p-4">
+          <div class="mb-4">
+            <div id="renter-pair-list" class="space-y-3">
+              <div class="renter-pair-card rounded-lg border border-blue-100 p-3">
+                <h5 class="mb-2 text-xs font-semibold uppercase tracking-wide text-brandBlue">Renter Details</h5>
+                <div class="grid gap-3 md:grid-cols-2">
+                  <div class="space-y-1">
+                    <p class="text-xs font-semibold text-slate-600">Full Name</p>
+                    <input name="renterFullName" required placeholder="Full Name" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                  </div>
+                  <div class="space-y-1">
+                    <p class="text-xs font-semibold text-slate-600">Contact Number</p>
+                    <input name="renterContact" required type="tel" inputmode="numeric" data-numeric-only placeholder="Contact Number" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                  </div>
+                  <div class="space-y-1">
+                    <p class="text-xs font-semibold text-slate-600">Gender</p>
+                    <select name="renterGender" required class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                      <option value="">Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
+                  </div>
+                  <div class="space-y-1">
+                    <p class="text-xs font-semibold text-slate-600">Hometown</p>
+                    <input name="renterHometown" required placeholder="Hometown" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                  </div>
+                </div>
+
+                <div class="mt-4 border-t border-blue-100 pt-3">
+                  <h5 class="mb-2 text-xs font-semibold uppercase tracking-wide text-brandBlue">In Case of Emergency</h5>
+                  <div class="grid gap-3 md:grid-cols-3">
+                    <div class="space-y-1">
+                      <p class="text-xs font-semibold text-slate-600">Full Name</p>
+                      <input name="emergencyFullName" required placeholder="Full Name" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                    </div>
+                    <div class="space-y-1">
+                      <p class="text-xs font-semibold text-slate-600">Relationship</p>
+                      <input name="emergencyRelationship" required placeholder="Relationship" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                    </div>
+                    <div class="space-y-1">
+                      <p class="text-xs font-semibold text-slate-600">Contact Number</p>
+                      <input name="emergencyContact" required type="tel" inputmode="numeric" data-numeric-only placeholder="Contact Number" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 flex justify-end">
+              <button type="button" id="add-more-people" class="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-brandBlue">+ Add More</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="rounded-xl border border-blue-100 p-4">
+          <h4 class="mb-3 text-sm font-semibold uppercase tracking-wide text-brandBlue">Room Terms</h4>
+          <div class="grid gap-3 md:grid-cols-2">
+            <div class="space-y-1">
+              <p class="text-xs font-semibold text-slate-600">Room Number</p>
+              <input name="roomNumber" required placeholder="Room Number" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs font-semibold text-slate-600">Floor (Optional)</p>
+              <input name="floor" placeholder="Floor" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs font-semibold text-slate-600">Monthly Rent</p>
+              <input name="roomRent" required type="number" min="0" step="0.01" placeholder="Monthly Rent (PHP)" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs font-semibold text-slate-600">Water</p>
+              <select name="waterType" required class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                <option value="">Add Amount or Included</option>
+                <option value="Included">Included</option>
+                <option value="Add Amount">Add Amount</option>
+              </select>
+              <input id="water-amount-input" name="waterAmount" type="number" min="0" step="0.01" placeholder="Water Amount (PHP)" class="hidden w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs font-semibold text-slate-600">Electricity</p>
+              <select name="lightType" required class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                <option value="">Add Amount or Included</option>
+                <option value="Included">Included</option>
+                <option value="Add Amount">Add Amount</option>
+                <option value="Per meter + Kilowatt">Per meter + Kilowatt</option>
+              </select>
+              <input id="light-amount-input" name="lightAmount" type="number" min="0" step="0.01" placeholder="Electricity Amount (PHP)" class="hidden w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs font-semibold text-slate-600">Day and Month to Pay</p>
+              <input name="paymentSchedule" required type="date" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+            </div>
+          </div>
+
+          <div class="mt-4 rounded-lg border border-dashed border-blue-300 p-3">
+            <div class="mb-2 flex items-center justify-between">
+              <p class="text-sm font-semibold text-slate-700">Additional Charges</p>
+              <button type="button" id="add-charge-row" class="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-brandBlue">+ Add (Title) + Add (Rate)</button>
+            </div>
+            <div id="optional-charges" class="space-y-2"></div>
+          </div>
+        </section>
+
+        <div class="flex justify-end gap-2">
+          <button type="button" id="cancel-renter-form" class="rounded-lg border border-blue-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-blue-50">Cancel</button>
+          <button type="submit" class="rounded-lg bg-brandBlue px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Save Renter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div id="logout-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 px-4">
+    <div class="w-full max-w-sm rounded-2xl border border-blue-100 bg-white p-6 shadow-panel">
+      <h3 class="text-lg font-semibold text-brandBlue">Confirm Logout</h3>
+      <p class="mt-2 text-sm text-[var(--text-soft)]">Are you sure you want to logout from the Dorm Management System?</p>
+      <div class="mt-5 flex justify-end gap-2">
+        <button id="cancel-logout" class="rounded-lg border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-[var(--text-main)] hover:bg-blue-50">Cancel</button>
+        <button id="confirm-logout" class="rounded-lg bg-brandBlue px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Logout</button>
+      </div>
+    </div>
+  </div>
+  <div id="view-details-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 px-4 py-8">
+    <div class="max-h-full w-full max-w-6xl overflow-y-auto rounded-2xl border border-blue-100 bg-white p-6 shadow-panel">
+      <div class="mb-4 flex items-start justify-between">
+        <h3 class="text-lg font-semibold text-brandBlue">Renter Full Details</h3>
+        <button id="close-view-details" class="rounded-lg border border-blue-200 px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-blue-50">Close</button>
+      </div>
+      <div id="view-details-content" class="grid gap-4 text-sm text-slate-700 lg:grid-cols-2"></div>
+    </div>
+  </div>
+  <div id="confirm-action-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-900/50 px-4">
+    <div class="w-full max-w-sm rounded-2xl border border-blue-100 bg-white p-6 shadow-panel">
+      <h3 class="text-lg font-semibold text-brandBlue">Please Confirm</h3>
+      <p id="confirm-action-message" class="mt-2 text-sm text-[var(--text-soft)]">Are you sure?</p>
+      <div class="mt-5 flex justify-end gap-2">
+        <button id="confirm-action-cancel" class="rounded-lg border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-[var(--text-main)] hover:bg-blue-50">Cancel</button>
+        <button id="confirm-action-ok" class="rounded-lg bg-brandBlue px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Confirm</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    const userNameLabel = document.getElementById("sidebar-username");
+    const avatarBadge = document.getElementById("avatar-badge");
+    const appSidebar = document.getElementById("app-sidebar");
+    const sidebarToggle = document.getElementById("sidebar-toggle");
+    const sidebarOverlay = document.getElementById("sidebar-overlay");
+    const logoutBtn = document.getElementById("logout-btn");
+    const logoutModal = document.getElementById("logout-modal");
+    const cancelLogoutBtn = document.getElementById("cancel-logout");
+    const confirmLogoutBtn = document.getElementById("confirm-logout");
+    const renterModal = document.getElementById("renter-modal");
+    const openRenterModalBtn = document.getElementById("open-renter-modal");
+    const closeRenterModalBtn = document.getElementById("close-renter-modal");
+    const cancelRenterFormBtn = document.getElementById("cancel-renter-form");
+    const renterForm = document.getElementById("renter-form");
+    const renterTableBody = document.getElementById("renter-table-body");
+    const emptyRow = document.getElementById("empty-row");
+    const renterSearchInput = document.getElementById("renter-search");
+    const noSearchResults = document.getElementById("no-search-results");
+    const optionalChargesWrap = document.getElementById("optional-charges");
+    const addChargeRowBtn = document.getElementById("add-charge-row");
+    const renterPairList = document.getElementById("renter-pair-list");
+    const addMorePeopleBtn = document.getElementById("add-more-people");
+    const waterTypeSelect = renterForm.querySelector('select[name="waterType"]');
+    const lightTypeSelect = renterForm.querySelector('select[name="lightType"]');
+    const waterAmountInput = document.getElementById("water-amount-input");
+    const lightAmountInput = document.getElementById("light-amount-input");
+    const viewDetailsModal = document.getElementById("view-details-modal");
+    const viewDetailsContent = document.getElementById("view-details-content");
+    const closeViewDetailsBtn = document.getElementById("close-view-details");
+    const confirmActionModal = document.getElementById("confirm-action-modal");
+    const confirmActionMessage = document.getElementById("confirm-action-message");
+    const confirmActionCancel = document.getElementById("confirm-action-cancel");
+    const confirmActionOk = document.getElementById("confirm-action-ok");
+    const RENTERS_STORAGE_KEY = "dmsRenters";
+    let confirmActionHandler = null;
+    let activeDetailRow = null;
+    const savedUsername = localStorage.getItem("dmsUsername");
+    if (savedUsername && savedUsername.trim()) {
+      const cleanUsername = savedUsername.trim();
+      userNameLabel.textContent = cleanUsername;
+      avatarBadge.textContent = cleanUsername.charAt(0).toUpperCase();
+    }
+    function openSidebar() {
+      appSidebar.classList.remove("-translate-x-full");
+      sidebarOverlay.classList.remove("hidden");
+    }
+    function closeSidebar() {
+      appSidebar.classList.add("-translate-x-full");
+      sidebarOverlay.classList.add("hidden");
+    }
+    sidebarToggle.addEventListener("click", function () {
+      const isHidden = appSidebar.classList.contains("-translate-x-full");
+      if (isHidden) openSidebar();
+      else closeSidebar();
+    });
+    sidebarOverlay.addEventListener("click", closeSidebar);
+    appSidebar.querySelectorAll("a.menu-link").forEach(function (link) {
+      link.addEventListener("click", closeSidebar);
+    });
+    window.addEventListener("resize", function () {
+      if (window.innerWidth >= 1024) sidebarOverlay.classList.add("hidden");
+    });
+    logoutBtn.addEventListener("click", function () {
+      logoutModal.classList.remove("hidden");
+      logoutModal.classList.add("flex");
+    });
+    cancelLogoutBtn.addEventListener("click", function () {
+      logoutModal.classList.add("hidden");
+      logoutModal.classList.remove("flex");
+    });
+    confirmLogoutBtn.addEventListener("click", function () {
+      window.location.href = "index.html";
+    });
+    function openRenterModal() {
+      renterModal.classList.remove("hidden");
+      renterModal.classList.add("flex");
+    }
+
+    function closeRenterModal() {
+      renterModal.classList.add("hidden");
+      renterModal.classList.remove("flex");
+    }
+
+    function createChargeRow() {
+      const row = document.createElement("div");
+      row.className = "grid gap-2 md:grid-cols-[1fr_160px_auto]";
+      row.innerHTML = `
+        <input name="chargeTitle" placeholder="Add (Title)" class="rounded-lg border border-blue-200 px-3 py-2 text-sm outline-none focus:border-blue-400">
+        <input name="chargeRate" type="number" min="0" step="0.01" placeholder="Add (Rate in PHP)" class="rounded-lg border border-blue-200 px-3 py-2 text-sm outline-none focus:border-blue-400">
+        <button type="button" class="remove-charge rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50">Remove</button>
+      `;
+      row.querySelector(".remove-charge").addEventListener("click", function () {
+        row.remove();
+      });
+      optionalChargesWrap.appendChild(row);
+    }
+
+    function bindNumericOnly(scopeEl) {
+      scopeEl.querySelectorAll("[data-numeric-only]").forEach(function (input) {
+        input.addEventListener("input", function () {
+          input.value = input.value.replace(/\D/g, "");
+        });
+      });
+    }
+
+    function createRenterPairCard(isAdditional) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "renter-pair-card rounded-lg border border-blue-100 p-3";
+      wrapper.innerHTML = `
+        ${isAdditional ? `
+        <div class="mb-2 flex justify-end">
+          <button type="button" class="remove-pair-btn rounded-md border border-red-200 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-50">Remove</button>
+        </div>
+        ` : ""}
+        <h5 class="mb-2 text-xs font-semibold uppercase tracking-wide text-brandBlue">Renter Details</h5>
+        <div class="grid gap-3 md:grid-cols-2">
+          <div class="space-y-1">
+            <p class="text-xs font-semibold text-slate-600">Full Name</p>
+            <input name="renterFullName" required placeholder="Full Name" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+          </div>
+          <div class="space-y-1">
+            <p class="text-xs font-semibold text-slate-600">Contact Number</p>
+            <input name="renterContact" required type="tel" inputmode="numeric" data-numeric-only placeholder="Contact Number" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+          </div>
+          <div class="space-y-1">
+            <p class="text-xs font-semibold text-slate-600">Gender</p>
+            <select name="renterGender" required class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+              <option value="">Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+          <div class="space-y-1">
+            <p class="text-xs font-semibold text-slate-600">Hometown</p>
+            <input name="renterHometown" required placeholder="Hometown" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+          </div>
+        </div>
+        <div class="mt-4 border-t border-blue-100 pt-3">
+          <h5 class="mb-2 text-xs font-semibold uppercase tracking-wide text-brandBlue">In Case of Emergency</h5>
+          <div class="grid gap-3 md:grid-cols-3">
+            <div class="space-y-1">
+              <p class="text-xs font-semibold text-slate-600">Full Name</p>
+              <input name="emergencyFullName" required placeholder="Full Name" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs font-semibold text-slate-600">Relationship</p>
+              <input name="emergencyRelationship" required placeholder="Relationship" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs font-semibold text-slate-600">Contact Number</p>
+              <input name="emergencyContact" required type="tel" inputmode="numeric" data-numeric-only placeholder="Contact Number" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+            </div>
+          </div>
+        </div>
+      `;
+      if (isAdditional) {
+        wrapper.querySelector(".remove-pair-btn").addEventListener("click", function () {
+          wrapper.remove();
+        });
+      }
+      bindNumericOnly(wrapper);
+      return wrapper;
+    }
+
+    function buildUtilityLabel(type, amount) {
+      if (type === "Included") return "Included";
+      if (type === "Add Amount" && amount) return "Add Amount: " + formatPeso(amount);
+      if (type === "Per meter + Kilowatt" && amount) return "Per meter + Kilowatt: " + formatPeso(amount);
+      return type || "-";
+    }
+
+    function toggleUtilityAmount(selectEl, amountInputEl) {
+      const shouldShow = selectEl.value === "Add Amount" || selectEl.value === "Per meter + Kilowatt";
+      amountInputEl.classList.toggle("hidden", !shouldShow);
+      amountInputEl.required = shouldShow;
+      if (!shouldShow) amountInputEl.value = "";
+
+      if (shouldShow && selectEl.value === "Per meter + Kilowatt") {
+        amountInputEl.placeholder = "Per meter + Kilowatt Rate (PHP)";
+      } else {
+        amountInputEl.placeholder = selectEl.name === "waterType" ? "Water Amount (PHP)" : "Electricity Amount (PHP)";
+      }
+    }
+
+    function formatPeso(value) {
+      const amount = Number(value);
+      if (Number.isNaN(amount)) return value;
+      return "PHP " + amount.toFixed(2);
+    }
+
+    function formatDateLabel(value) {
+      if (!value) return "-";
+      const date = new Date(value + "T00:00:00");
+      if (Number.isNaN(date.getTime())) return value;
+      return date.toLocaleDateString("en-PH", { month: "long", day: "numeric" });
+    }
+
+    function formatTimestampNow() {
+      return new Date().toLocaleString("en-PH", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function askConfirmation(message, onConfirm) {
+      confirmActionMessage.textContent = message;
+      confirmActionHandler = onConfirm;
+      confirmActionModal.classList.remove("hidden");
+      confirmActionModal.classList.add("flex");
+    }
+
+    function closeConfirmation() {
+      confirmActionModal.classList.add("hidden");
+      confirmActionModal.classList.remove("flex");
+      confirmActionHandler = null;
+    }
+
+    function formatRoomTermsForDisplay(data) {
+      let statusDisplay = data.paymentStatus || "NOT PAID";
+      if (statusDisplay === "PARTIAL" && data.paymentBalance) {
+        statusDisplay = `PARTIAL (Balance: ${formatPeso(data.paymentBalance)})`;
+      }
+      return {
+        roomRentDisplay: formatPeso(data.roomRentRaw),
+        waterDisplay: buildUtilityLabel(data.waterType, data.waterAmount),
+        lightDisplay: buildUtilityLabel(data.lightType, data.lightAmount),
+        optionalDisplay: data.optionalCharges || "-",
+        paymentDisplay: formatDateLabel(data.paymentScheduleRaw),
+        statusDisplay
+      };
+    }
+
+    function getStatusBadge(status) {
+      if (status === "PAID") {
+        return '<span class="inline-flex rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700">PAID</span>';
+      }
+      if (status === "PARTIAL") {
+        return '<span class="inline-flex rounded-full bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-700">PARTIAL</span>';
+      }
+      return '<span class="inline-flex rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700">NOT PAID</span>';
+    }
+
+    function updateRowFromData(rowEl, data) {
+      const terms = formatRoomTermsForDisplay(data);
+      rowEl.querySelector(".cell-room-number").textContent = data.roomNumber;
+      rowEl.querySelector(".cell-renter-name").textContent = data.renterName;
+      rowEl.querySelector(".cell-payment-schedule").textContent = terms.paymentDisplay;
+      rowEl._rowData = { ...data, ...terms };
+      persistTableRows();
+      applyTableSearch();
+    }
+
+    function getStoredRenters() {
+      try {
+        const raw = localStorage.getItem(RENTERS_STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function persistTableRows() {
+      const rows = renterTableBody.querySelectorAll('tr[data-renter-row="true"]');
+      const renters = Array.from(rows).map(function (row) {
+        const data = row._rowData || {};
+        return {
+          renterName: data.renterName || "",
+          renterContact: data.renterContact || "",
+          renterGender: data.renterGender || "",
+          renterHometown: data.renterHometown || "",
+          emergencyName: data.emergencyName || "",
+          emergencyRelationship: data.emergencyRelationship || "",
+          emergencyContact: data.emergencyContact || "",
+          renterPeople: Array.isArray(data.renterPeople) ? data.renterPeople : [],
+          emergencyPeople: Array.isArray(data.emergencyPeople) ? data.emergencyPeople : [],
+          roomNumber: data.roomNumber || "",
+          floor: data.floor || "-",
+          roomRentRaw: data.roomRentRaw || "",
+          waterType: data.waterType || "",
+          waterAmount: data.waterAmount || "",
+          lightType: data.lightType || "",
+          lightAmount: data.lightAmount || "",
+          paymentScheduleRaw: data.paymentScheduleRaw || "",
+          paymentStatus: data.paymentStatus || "NOT PAID",
+          paymentBalance: data.paymentBalance || "",
+          timestampStarted: data.timestampStarted || "",
+          optionalCharges: data.optionalCharges || "-"
+        };
+      });
+      localStorage.setItem(RENTERS_STORAGE_KEY, JSON.stringify(renters));
+    }
+
+    function buildRenterRow(rowData) {
+      const terms = formatRoomTermsForDisplay(rowData);
+      const tr = document.createElement("tr");
+      tr.className = "border-t border-blue-100";
+      tr.dataset.renterRow = "true";
+      tr.innerHTML = `
+        <td class="cell-room-number border-t border-blue-100 px-4 py-3 align-top text-sm text-slate-600">${rowData.roomNumber}</td>
+        <td class="cell-renter-name border-t border-blue-100 px-4 py-3 align-top">
+          <p class="whitespace-pre-line font-semibold text-slate-800">${rowData.renterName}</p>
+        </td>
+        <td class="cell-payment-schedule border-t border-blue-100 px-4 py-3 align-top text-sm text-slate-600">${terms.paymentDisplay}</td>
+        <td class="border-t border-blue-100 px-4 py-3 align-top">
+          <button type="button" class="view-details-btn rounded-md border border-blue-200 bg-white px-3 py-1.5 text-sm font-semibold text-brandBlue hover:bg-blue-50">View Details</button>
+        </td>
+      `;
+      tr._rowData = { ...rowData, ...terms };
+      tr.querySelector(".view-details-btn").addEventListener("click", function () {
+        openViewDetails(tr._rowData, tr);
+      });
+      return tr;
+    }
+
+    function loadStoredRenterRows() {
+      const renters = getStoredRenters();
+      if (!renters.length) return;
+      const placeholderRow = document.getElementById("empty-row");
+      if (placeholderRow) placeholderRow.remove();
+      renters.forEach(function (rowData) {
+        const tr = buildRenterRow(rowData);
+        renterTableBody.appendChild(tr);
+      });
+      applyTableSearch();
+    }
+
+    function applyTableSearch() {
+      const query = renterSearchInput.value.trim().toLowerCase();
+      const rows = renterTableBody.querySelectorAll('tr[data-renter-row="true"]');
+      let visibleCount = 0;
+      rows.forEach(function (row) {
+        const data = row._rowData || {};
+        const searchable = `${data.renterName || ""} ${data.roomNumber || ""}`.toLowerCase();
+        const isMatch = !query || searchable.includes(query);
+        row.classList.toggle("hidden", !isMatch);
+        if (isMatch) visibleCount += 1;
+      });
+      noSearchResults.classList.toggle("hidden", !(query && visibleCount === 0));
+    }
+
+    function setSectionEditable(sectionEl, isEditable) {
+      sectionEl.querySelectorAll("input, select, textarea").forEach(function (el) {
+        el.disabled = !isEditable;
+      });
+      sectionEl.querySelectorAll(".edit-only-action").forEach(function (el) {
+        el.classList.toggle("hidden", !isEditable);
+        if ("disabled" in el) el.disabled = !isEditable;
+      });
+      sectionEl.querySelector(".section-edit-btn").classList.toggle("hidden", isEditable);
+      sectionEl.querySelector(".section-save-btn").classList.toggle("hidden", !isEditable);
+      sectionEl.querySelector(".section-cancel-btn").classList.toggle("hidden", !isEditable);
+    }
+
+    function openViewDetails(data, rowEl) {
+      activeDetailRow = rowEl;
+      const renterPeople = Array.isArray(data.renterPeople) && data.renterPeople.length
+        ? data.renterPeople
+        : [{ fullName: data.renterName || "", contact: data.renterContact || "", gender: data.renterGender || "", hometown: data.renterHometown || "" }];
+      const emergencyPeople = Array.isArray(data.emergencyPeople) && data.emergencyPeople.length
+        ? data.emergencyPeople
+        : [{ fullName: data.emergencyName || "", relationship: data.emergencyRelationship || "", contact: data.emergencyContact || "" }];
+      const maxPeople = Math.max(renterPeople.length, emergencyPeople.length, 1);
+
+      viewDetailsContent.innerHTML = `
+        <section data-section="people" class="rounded-lg border border-blue-100 p-4 lg:col-span-2">
+          <div class="mb-2 flex items-center justify-between">
+            <h4 class="text-sm font-semibold uppercase tracking-wide text-brandBlue">Renter Full Details</h4>
+            <div class="flex gap-2">
+              <button type="button" class="section-edit-btn rounded-md border border-blue-200 px-3 py-1 text-xs font-semibold text-brandBlue hover:bg-blue-50">Edit</button>
+              <button type="button" class="section-save-btn hidden rounded-md bg-brandBlue px-3 py-1 text-xs font-semibold text-white hover:bg-blue-700">Save</button>
+              <button type="button" class="section-cancel-btn hidden rounded-md border border-blue-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-blue-50">Cancel</button>
+            </div>
+          </div>
+          <div data-people-cards class="grid gap-3 lg:grid-cols-2"></div>
+          <div class="mt-3">
+            <button type="button" class="add-person-pair edit-only-action hidden rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-brandBlue">+ Add More</button>
+          </div>
+        </section>
+        <section data-section="room" class="rounded-lg border border-blue-100 p-4 lg:col-span-2">
+          <div class="mb-2 flex items-center justify-between">
+            <h4 class="text-sm font-semibold uppercase tracking-wide text-brandBlue">Room Terms</h4>
+            <div class="flex gap-2">
+              <button type="button" class="section-edit-btn rounded-md border border-blue-200 px-3 py-1 text-xs font-semibold text-brandBlue hover:bg-blue-50">Edit</button>
+              <button type="button" class="section-save-btn hidden rounded-md bg-brandBlue px-3 py-1 text-xs font-semibold text-white hover:bg-blue-700">Save</button>
+              <button type="button" class="section-cancel-btn hidden rounded-md border border-blue-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-blue-50">Cancel</button>
+            </div>
+          </div>
+          <div class="grid gap-2 md:grid-cols-2">
+            <div class="space-y-1">
+              <p class="text-xs font-semibold text-slate-600">Room Number</p>
+              <input data-field="roomNumber" disabled value="${escapeHtml(data.roomNumber)}" class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm">
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs font-semibold text-slate-600">Floor</p>
+              <input data-field="floor" disabled value="${escapeHtml(data.floor)}" class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm">
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs font-semibold text-slate-600">Monthly Rent (PHP)</p>
+              <input data-field="roomRentRaw" disabled type="number" min="0" step="0.01" value="${escapeHtml(data.roomRentRaw)}" class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm">
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs font-semibold text-slate-600">Water</p>
+              <select data-field="waterType" disabled class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm">
+                <option value="Included"${data.waterType === "Included" ? " selected" : ""}>Included</option>
+                <option value="Add Amount"${data.waterType === "Add Amount" ? " selected" : ""}>Add Amount</option>
+              </select>
+            </div>
+            <div data-water-amount-wrap class="space-y-1">
+              <p class="text-xs font-semibold text-slate-600">Water Amount (PHP)</p>
+              <input data-field="waterAmount" disabled type="number" min="0" step="0.01" value="${escapeHtml(data.waterAmount || "")}" class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm">
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs font-semibold text-slate-600">Electricity</p>
+              <select data-field="lightType" disabled class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm">
+                <option value="Included"${data.lightType === "Included" ? " selected" : ""}>Included</option>
+                <option value="Add Amount"${data.lightType === "Add Amount" ? " selected" : ""}>Add Amount</option>
+                <option value="Per meter + Kilowatt"${data.lightType === "Per meter + Kilowatt" ? " selected" : ""}>Per meter + Kilowatt</option>
+              </select>
+            </div>
+            <div data-light-amount-wrap class="space-y-1">
+              <p class="text-xs font-semibold text-slate-600">Electricity Amount (PHP)</p>
+              <input data-field="lightAmount" disabled type="number" min="0" step="0.01" value="${escapeHtml(data.lightAmount || "")}" class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm">
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs font-semibold text-slate-600">Payment Date</p>
+              <input data-field="paymentScheduleRaw" disabled type="date" value="${escapeHtml(data.paymentScheduleRaw)}" class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm">
+            </div>
+            <div class="space-y-1 md:col-span-2">
+              <p class="text-xs font-semibold text-slate-600">Additional Charges</p>
+              <textarea data-field="optionalCharges" disabled rows="3" class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm">${escapeHtml(data.optionalCharges || "-")}</textarea>
+              <div class="mt-2 grid gap-2 md:grid-cols-[1fr_180px_auto]">
+                <input data-optional-title disabled placeholder="Charge Title (e.g. Laptop)" class="edit-only-action hidden rounded-lg border border-blue-200 px-3 py-2 text-sm">
+                <input data-optional-rate disabled type="number" min="0" step="0.01" placeholder="Rate (PHP)" class="edit-only-action hidden rounded-lg border border-blue-200 px-3 py-2 text-sm">
+                <button type="button" disabled class="add-optional-btn edit-only-action hidden rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-brandBlue hover:bg-blue-100">Add Optional Charge</button>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-slate-500"><span class="font-semibold">Timestamp Started:</span> ${escapeHtml(data.timestampStarted)}</p>
+        </section>
+      `;
+
+      const peopleCardsWrap = viewDetailsContent.querySelector("[data-people-cards]");
+
+      function createPersonPairCard(personIndex, renterPerson, emergencyPerson, isAdditional) {
+        const card = document.createElement("div");
+        card.className = "rounded-lg border border-blue-100 p-3";
+        card.innerHTML = `
+          ${isAdditional ? `<div class="mb-2 flex justify-end"><button type="button" class="remove-renter-detail edit-only-action hidden rounded-md border border-red-200 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-50">Remove</button></div>` : ""}
+          <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-brandBlue">RENTER ${personIndex + 1}</p>
+          <div class="space-y-2">
+            <p class="text-xs font-semibold text-slate-600">Renter Details</p>
+            <div class="grid gap-2 md:grid-cols-2">
+              <div><p class="mb-1 text-xs text-slate-500">Full Name</p><input data-renter-item="fullName" disabled value="${escapeHtml((renterPerson && renterPerson.fullName) || "")}" class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm"></div>
+              <div><p class="mb-1 text-xs text-slate-500">Contact Number</p><input data-renter-item="contact" disabled value="${escapeHtml((renterPerson && renterPerson.contact) || "")}" class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm"></div>
+              <div><p class="mb-1 text-xs text-slate-500">Gender</p><select data-renter-item="gender" disabled class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm"><option value="Male"${(renterPerson && renterPerson.gender) === "Male" ? " selected" : ""}>Male</option><option value="Female"${(renterPerson && renterPerson.gender) === "Female" ? " selected" : ""}>Female</option></select></div>
+              <div><p class="mb-1 text-xs text-slate-500">Hometown</p><input data-renter-item="hometown" disabled value="${escapeHtml((renterPerson && renterPerson.hometown) || "")}" class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm"></div>
+            </div>
+            <p class="pt-1 text-xs font-semibold text-slate-600">Emergency Contact</p>
+            <div class="grid gap-2 md:grid-cols-3">
+              <div><p class="mb-1 text-xs text-slate-500">Full Name</p><input data-emergency-item="fullName" disabled value="${escapeHtml((emergencyPerson && emergencyPerson.fullName) || "")}" class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm"></div>
+              <div><p class="mb-1 text-xs text-slate-500">Relationship</p><input data-emergency-item="relationship" disabled value="${escapeHtml((emergencyPerson && emergencyPerson.relationship) || "")}" class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm"></div>
+              <div><p class="mb-1 text-xs text-slate-500">Contact Number</p><input data-emergency-item="contact" disabled value="${escapeHtml((emergencyPerson && emergencyPerson.contact) || "")}" class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm"></div>
+            </div>
+          </div>
+        `;
+        const removeBtn = card.querySelector(".remove-renter-detail");
+        if (removeBtn) removeBtn.addEventListener("click", function () { card.remove(); });
+        return card;
+      }
+
+      for (let i = 0; i < maxPeople; i += 1) {
+        peopleCardsWrap.appendChild(createPersonPairCard(i, renterPeople[i], emergencyPeople[i], i > 0));
+      }
+      peopleCardsWrap.classList.toggle("lg:grid-cols-1", maxPeople === 1);
+      peopleCardsWrap.classList.toggle("lg:grid-cols-2", maxPeople > 1);
+
+      viewDetailsContent.querySelectorAll("section").forEach(function (sectionEl) {
+        const originalValues = {};
+        sectionEl.querySelectorAll("[data-field]").forEach(function (fieldEl) {
+          originalValues[fieldEl.dataset.field] = fieldEl.value;
+        });
+        if (sectionEl.dataset.section === "room") {
+          const optionalTextArea = sectionEl.querySelector('[data-field="optionalCharges"]');
+          const optionalTitleInput = sectionEl.querySelector("[data-optional-title]");
+          const optionalRateInput = sectionEl.querySelector("[data-optional-rate]");
+          const addOptionalBtn = sectionEl.querySelector(".add-optional-btn");
+          const waterTypeField = sectionEl.querySelector('[data-field="waterType"]');
+          const lightTypeField = sectionEl.querySelector('[data-field="lightType"]');
+          const waterAmountWrap = sectionEl.querySelector("[data-water-amount-wrap]");
+          const lightAmountWrap = sectionEl.querySelector("[data-light-amount-wrap]");
+          const waterAmountField = sectionEl.querySelector('[data-field="waterAmount"]');
+          const lightAmountField = sectionEl.querySelector('[data-field="lightAmount"]');
+
+          function syncRoomAmountVisibility() {
+            const showWaterAmount = waterTypeField.value === "Add Amount";
+            const showLightAmount = lightTypeField.value === "Add Amount" || lightTypeField.value === "Per meter + Kilowatt";
+            waterAmountWrap.classList.toggle("hidden", !showWaterAmount);
+            lightAmountWrap.classList.toggle("hidden", !showLightAmount);
+            if (!showWaterAmount) waterAmountField.value = "";
+            if (!showLightAmount) lightAmountField.value = "";
+          }
+
+          syncRoomAmountVisibility();
+          waterTypeField.addEventListener("change", syncRoomAmountVisibility);
+          lightTypeField.addEventListener("change", syncRoomAmountVisibility);
+
+          addOptionalBtn.addEventListener("click", function () {
+            const title = optionalTitleInput.value.trim();
+            const rate = optionalRateInput.value.trim();
+            if (!title && !rate) return;
+            const newEntry = `${title || "Untitled"}: ${rate ? formatPeso(rate) : "-"}`;
+            const existing = optionalTextArea.value.trim();
+            optionalTextArea.value = !existing || existing === "-" ? newEntry : `${existing}, ${newEntry}`;
+            optionalTitleInput.value = "";
+            optionalRateInput.value = "";
+          });
+        }
+        if (sectionEl.dataset.section === "people") {
+          sectionEl.querySelector(".add-person-pair").addEventListener("click", function () {
+            const nextIndex = peopleCardsWrap.children.length;
+            peopleCardsWrap.appendChild(createPersonPairCard(nextIndex, { fullName: "", contact: "", gender: "Male", hometown: "" }, { fullName: "", relationship: "", contact: "" }, true));
+            setSectionEditable(sectionEl, true);
+          });
+        }
+        sectionEl.querySelector(".section-edit-btn").addEventListener("click", function () {
+          setSectionEditable(sectionEl, true);
+        });
+        sectionEl.querySelector(".section-cancel-btn").addEventListener("click", function () {
+          openViewDetails(activeDetailRow._rowData, activeDetailRow);
+        });
+        sectionEl.querySelector(".section-save-btn").addEventListener("click", function () {
+          askConfirmation("Save changes in this section?", function () {
+            if (sectionEl.dataset.section === "people") {
+              const renterList = [];
+              const emergencyList = [];
+              Array.from(peopleCardsWrap.children).forEach(function (card) {
+                const renter = {
+                  fullName: card.querySelector('[data-renter-item="fullName"]').value.trim(),
+                  contact: card.querySelector('[data-renter-item="contact"]').value.trim(),
+                  gender: card.querySelector('[data-renter-item="gender"]').value,
+                  hometown: card.querySelector('[data-renter-item="hometown"]').value.trim()
+                };
+                const emergency = {
+                  fullName: card.querySelector('[data-emergency-item="fullName"]').value.trim(),
+                  relationship: card.querySelector('[data-emergency-item="relationship"]').value.trim(),
+                  contact: card.querySelector('[data-emergency-item="contact"]').value.trim()
+                };
+                if (renter.fullName) renterList.push(renter);
+                if (emergency.fullName) emergencyList.push(emergency);
+              });
+              activeDetailRow._rowData.renterPeople = renterList;
+              activeDetailRow._rowData.emergencyPeople = emergencyList;
+              activeDetailRow._rowData.renterName = renterList.map(p => p.fullName).join("\n");
+              activeDetailRow._rowData.renterContact = renterList.map(p => p.contact).filter(Boolean).join(" / ");
+              activeDetailRow._rowData.renterGender = renterList.map(p => p.gender).filter(Boolean).join(", ");
+              activeDetailRow._rowData.renterHometown = renterList.map(p => p.hometown).filter(Boolean).join(", ");
+              activeDetailRow._rowData.emergencyName = emergencyList.map(p => p.fullName).join("\n");
+              activeDetailRow._rowData.emergencyRelationship = emergencyList.map(p => p.relationship).filter(Boolean).join(", ");
+              activeDetailRow._rowData.emergencyContact = emergencyList.map(p => p.contact).filter(Boolean).join(" / ");
+            } else {
+              sectionEl.querySelectorAll("[data-field]").forEach(function (fieldEl) {
+                const key = fieldEl.dataset.field;
+                activeDetailRow._rowData[key] = fieldEl.value;
+                originalValues[key] = fieldEl.value;
+              });
+            }
+            updateRowFromData(activeDetailRow, activeDetailRow._rowData);
+            openViewDetails(activeDetailRow._rowData, activeDetailRow);
+            closeConfirmation();
+          });
+        });
+      });
+      viewDetailsModal.classList.remove("hidden");
+      viewDetailsModal.classList.add("flex");
+    }
+
+    function closeViewDetails() {
+      viewDetailsModal.classList.add("hidden");
+      viewDetailsModal.classList.remove("flex");
+    }
+
+    bindNumericOnly(document);
+
+    openRenterModalBtn.addEventListener("click", openRenterModal);
+    closeRenterModalBtn.addEventListener("click", closeRenterModal);
+    cancelRenterFormBtn.addEventListener("click", closeRenterModal);
+    addChargeRowBtn.addEventListener("click", createChargeRow);
+    addMorePeopleBtn.addEventListener("click", function () {
+      renterPairList.appendChild(createRenterPairCard(true));
+    });
+    renterSearchInput.addEventListener("input", applyTableSearch);
+    waterTypeSelect.addEventListener("change", function () {
+      toggleUtilityAmount(waterTypeSelect, waterAmountInput);
+    });
+    lightTypeSelect.addEventListener("change", function () {
+      toggleUtilityAmount(lightTypeSelect, lightAmountInput);
+    });
+
+    closeViewDetailsBtn.addEventListener("click", closeViewDetails);
+    confirmActionCancel.addEventListener("click", closeConfirmation);
+    confirmActionOk.addEventListener("click", function () {
+      if (confirmActionHandler) confirmActionHandler();
+    });
+    loadStoredRenterRows();
+
+    renterForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+      const formData = new FormData(renterForm);
+
+      const renterFullNames = formData.getAll("renterFullName").map(v => (v || "").trim()).filter(Boolean);
+      const renterContacts = formData.getAll("renterContact").map(v => (v || "").trim());
+      const renterGenders = formData.getAll("renterGender").map(v => (v || "").trim());
+      const renterHometowns = formData.getAll("renterHometown").map(v => (v || "").trim());
+      const renterPeople = renterFullNames.map(function (name, idx) {
+        return {
+          fullName: name,
+          contact: renterContacts[idx] || "",
+          gender: renterGenders[idx] || "",
+          hometown: renterHometowns[idx] || ""
+        };
+      });
+      const renterName = renterPeople.map(p => p.fullName).join("\n");
+      const renterContact = renterPeople.map(p => p.contact).filter(Boolean).join(" / ");
+      const renterGender = renterPeople.map(p => p.gender).filter(Boolean).join(", ");
+      const renterHometown = renterPeople.map(p => p.hometown).filter(Boolean).join(", ");
+
+      const emergencyNames = formData.getAll("emergencyFullName").map(v => (v || "").trim()).filter(Boolean);
+      const emergencyRelationships = formData.getAll("emergencyRelationship").map(v => (v || "").trim());
+      const emergencyContacts = formData.getAll("emergencyContact").map(v => (v || "").trim());
+      const emergencyPeople = emergencyNames.map(function (name, idx) {
+        return {
+          fullName: name,
+          relationship: emergencyRelationships[idx] || "",
+          contact: emergencyContacts[idx] || ""
+        };
+      });
+      const emergencyName = emergencyPeople.map(p => p.fullName).join("\n");
+      const emergencyRelationship = emergencyPeople.map(p => p.relationship).filter(Boolean).join(", ");
+      const emergencyContact = emergencyPeople.map(p => p.contact).filter(Boolean).join(" / ");
+
+      const rowData = {
+        renterName,
+        renterContact,
+        renterGender,
+        renterHometown,
+        emergencyName,
+        emergencyRelationship,
+        emergencyContact,
+        renterPeople,
+        emergencyPeople,
+        roomNumber: formData.get("roomNumber"),
+        floor: formData.get("floor") || "-",
+        roomRentRaw: formData.get("roomRent"),
+        waterType: formData.get("waterType"),
+        waterAmount: formData.get("waterAmount"),
+        lightType: formData.get("lightType"),
+        lightAmount: formData.get("lightAmount"),
+        paymentScheduleRaw: formData.get("paymentSchedule"),
+        paymentStatus: "NOT PAID",
+        paymentBalance: "",
+        timestampStarted: formatTimestampNow()
+      };
+
+      const chargeTitles = formData.getAll("chargeTitle");
+      const chargeRates = formData.getAll("chargeRate");
+      const optionalParts = [];
+      for (let i = 0; i < chargeTitles.length; i += 1) {
+        const title = (chargeTitles[i] || "").trim();
+        const rate = (chargeRates[i] || "").trim();
+        if (title || rate) optionalParts.push((title || "Untitled") + ": " + (rate ? formatPeso(rate) : "-"));
+      }
+      rowData.optionalCharges = optionalParts.length ? optionalParts.join(", ") : "-";
+      const terms = formatRoomTermsForDisplay(rowData);
+
+      const tr = buildRenterRow(rowData);
+      askConfirmation("Save renter and add to the table?", function () {
+        const placeholderRow = document.getElementById("empty-row");
+        if (placeholderRow) placeholderRow.remove();
+        renterTableBody.appendChild(tr);
+        persistTableRows();
+        renterForm.reset();
+        optionalChargesWrap.innerHTML = "";
+        renterPairList.querySelectorAll(".renter-pair-card").forEach(function (card, index) {
+          if (index > 0) card.remove();
+        });
+        toggleUtilityAmount(waterTypeSelect, waterAmountInput);
+        toggleUtilityAmount(lightTypeSelect, lightAmountInput);
+        applyTableSearch();
+        closeRenterModal();
+        closeConfirmation();
+      });
+    });
+  </script>
+</body>
+</html>

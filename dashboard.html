@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dorm Management System - Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandBlue: "#1f5eff",
+            brandLight: "#eaf1ff",
+            slateText: "#1f2a44"
+          },
+          boxShadow: {
+            panel: "0 10px 30px rgba(31, 94, 255, 0.12)"
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --sidebar-bg: #ffffff;
+      --sidebar-border: #dbe7ff;
+      --hover-blue: #edf3ff;
+      --active-blue: #dfe9ff;
+      --text-main: #1f2a44;
+      --text-soft: #5f6f91;
+    }
+
+    body {
+      font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .shadcn-card {
+      background: #ffffff;
+      border: 1px solid #e6ecff;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    .sidebar-shell {
+      background: #ffffff;
+      border-right: 1px solid var(--sidebar-border);
+      color: var(--text-main);
+    }
+
+    .sidebar-card {
+      border: 1px solid #dbe7ff;
+      background: linear-gradient(180deg, #ffffff 0%, #f5f9ff 100%);
+      border-radius: 12px;
+    }
+
+    .menu-label {
+      color: var(--text-soft);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .menu-link {
+      display: flex;
+      align-items: center;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      transition: all 0.2s ease;
+      border: 1px solid #dbe7ff;
+    }
+
+    .menu-link:hover {
+      background: var(--hover-blue);
+      color: var(--brandBlue);
+    }
+
+    .menu-link.active {
+      background: linear-gradient(90deg, #1f66ff 0%, #2c72ff 100%);
+      color: #ffffff;
+      border-color: #4f8cff;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 6px 18px rgba(44, 114, 255, 0.35);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-white to-blue-50 text-slateText">
+  <div class="relative flex min-h-screen">
+    <aside id="app-sidebar" class="sidebar-shell fixed inset-y-0 left-0 z-40 w-80 -translate-x-full shadow-panel transition-transform duration-200 lg:static lg:translate-x-0 flex flex-col justify-between">
+      <div class="p-6">
+        <div class="sidebar-card mb-7 p-4">
+          <div>
+            <h1 class="text-base font-semibold leading-tight text-brandBlue">Dorm Management System</h1>
+          </div>
+        </div>
+
+        <nav aria-label="Sidebar menu">
+          <p class="menu-label mb-2 px-2">Overview</p>
+          <ul class="space-y-1.5">
+            <li>
+              <a href="dashboard.html" class="menu-link active">
+                DASHBOARD
+              </a>
+            </li>
+            <li>
+              <a href="records.html" class="menu-link">
+                RECORDS
+              </a>
+            </li>
+            <li>
+              <a href="logs.html" class="menu-link">
+                TRANSACTION LOGS
+              </a>
+            </li>
+            <li>
+              <a href="renter.html" class="menu-link">
+                TENANTS DATA
+              </a>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="sidebar-card mt-4 p-3">
+          <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">This Month Status</p>
+          <div class="mt-2 space-y-1.5 text-xs">
+            <div class="flex items-center justify-between rounded-md border border-green-100 bg-green-50 px-2.5 py-1.5">
+              <span class="font-semibold text-green-700">PAID</span>
+              <span id="sidebar-paid-count" class="font-bold text-green-800">0</span>
+            </div>
+            <div class="flex items-center justify-between rounded-md border border-red-100 bg-red-50 px-2.5 py-1.5">
+              <span class="font-semibold text-red-700">NOT PAID</span>
+              <span id="sidebar-not-paid-count" class="font-bold text-red-800">0</span>
+            </div>
+            <div class="flex items-center justify-between rounded-md border border-orange-100 bg-orange-50 px-2.5 py-1.5">
+              <span class="font-semibold text-orange-700">PARTIAL</span>
+              <span id="sidebar-partial-count" class="font-bold text-orange-800">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="border-t border-[var(--sidebar-border)] p-6">
+        <div class="sidebar-card p-3">
+          <div class="mb-3 flex items-center gap-3">
+            <div id="avatar-badge" class="grid h-10 w-10 place-items-center rounded-full bg-brandLight text-sm font-bold text-brandBlue">
+              U
+            </div>
+            <div class="min-w-0">
+              <p id="sidebar-username" class="truncate text-sm font-semibold text-[var(--text-main)]">(Username)</p>
+              <p class="text-xs text-[var(--text-soft)]">Dormitory Staff</p>
+            </div>
+          </div>
+          <button id="logout-btn" class="w-full rounded-lg border border-blue-200 bg-white px-4 py-2.5 text-sm font-semibold text-brandBlue transition hover:bg-brandLight active:scale-[0.99]">
+            Logout
+          </button>
+        </div>
+      </div>
+    </aside>
+    <div id="sidebar-overlay" class="fixed inset-0 z-30 hidden bg-slate-900/35 lg:hidden"></div>
+
+    <main class="flex-1 w-full p-4 sm:p-6 lg:p-8">
+      <div class="mb-4 flex items-center justify-between lg:hidden">
+        <button id="sidebar-toggle" type="button" class="rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm font-semibold text-brandBlue">☰ Menu</button>
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Dashboard</p>
+      </div>
+      <section class="space-y-6">
+        <div class="grid gap-4 md:grid-cols-2">
+          <article class="rounded-2xl border border-blue-100 bg-white p-6 shadow-panel">
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Total Renters</p>
+            <p id="total-renters-count" class="mt-2 text-4xl font-bold text-brandBlue">0</p>
+            <p class="mt-2 text-sm text-slate-500">All renters currently saved in TENANTS DATA.</p>
+          </article>
+          <article class="rounded-2xl border border-blue-100 bg-white p-6 shadow-panel">
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Due Soon (Next 3 Days)</p>
+            <div id="due-soon-list" class="mt-2 space-y-2 text-sm text-slate-700">
+              <p class="text-slate-500">No upcoming dues.</p>
+            </div>
+          </article>
+        </div>
+
+        <article class="rounded-2xl border border-blue-100 bg-white p-4 shadow-panel">
+          <div class="mb-4 flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Payment Calendar</p>
+              <h3 id="calendar-title" class="text-lg font-semibold text-brandBlue">Month</h3>
+            </div>
+            <p class="text-xs text-slate-500">Room numbers are shown on due dates.</p>
+          </div>
+          <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+            <p>Sun</p><p>Mon</p><p>Tue</p><p>Wed</p><p>Thu</p><p>Fri</p><p>Sat</p>
+          </div>
+          <div id="payment-calendar-grid" class="mt-2 grid grid-cols-7 gap-1"></div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div id="logout-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 px-4">
+    <div class="w-full max-w-sm rounded-2xl border border-blue-100 bg-white p-6 shadow-panel">
+      <h3 class="text-lg font-semibold text-brandBlue">Confirm Logout</h3>
+      <p class="mt-2 text-sm text-[var(--text-soft)]">Are you sure you want to logout from the Dorm Management System?</p>
+      <div class="mt-5 flex justify-end gap-2">
+        <button id="cancel-logout" class="rounded-lg border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-[var(--text-main)] hover:bg-blue-50">Cancel</button>
+        <button id="confirm-logout" class="rounded-lg bg-brandBlue px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const userNameLabel = document.getElementById("sidebar-username");
+    const logoutBtn = document.getElementById("logout-btn");
+    const avatarBadge = document.getElementById("avatar-badge");
+    const appSidebar = document.getElementById("app-sidebar");
+    const sidebarToggle = document.getElementById("sidebar-toggle");
+    const sidebarOverlay = document.getElementById("sidebar-overlay");
+    const logoutModal = document.getElementById("logout-modal");
+    const cancelLogoutBtn = document.getElementById("cancel-logout");
+    const confirmLogoutBtn = document.getElementById("confirm-logout");
+    const totalRentersCount = document.getElementById("total-renters-count");
+    const dueSoonList = document.getElementById("due-soon-list");
+    const calendarTitle = document.getElementById("calendar-title");
+    const paymentCalendarGrid = document.getElementById("payment-calendar-grid");
+    const sidebarPaidCount = document.getElementById("sidebar-paid-count");
+    const sidebarNotPaidCount = document.getElementById("sidebar-not-paid-count");
+    const sidebarPartialCount = document.getElementById("sidebar-partial-count");
+    const RENTERS_STORAGE_KEY = "dmsRenters";
+    const savedUsername = localStorage.getItem("dmsUsername");
+
+    if (savedUsername && savedUsername.trim()) {
+      const cleanUsername = savedUsername.trim();
+      userNameLabel.textContent = cleanUsername;
+      avatarBadge.textContent = cleanUsername.charAt(0).toUpperCase();
+    }
+
+    function openSidebar() {
+      appSidebar.classList.remove("-translate-x-full");
+      sidebarOverlay.classList.remove("hidden");
+    }
+
+    function closeSidebar() {
+      appSidebar.classList.add("-translate-x-full");
+      sidebarOverlay.classList.add("hidden");
+    }
+
+    sidebarToggle.addEventListener("click", function () {
+      const isHidden = appSidebar.classList.contains("-translate-x-full");
+      if (isHidden) openSidebar();
+      else closeSidebar();
+    });
+    sidebarOverlay.addEventListener("click", closeSidebar);
+    appSidebar.querySelectorAll("a.menu-link").forEach(function (link) {
+      link.addEventListener("click", closeSidebar);
+    });
+    window.addEventListener("resize", function () {
+      if (window.innerWidth >= 1024) sidebarOverlay.classList.add("hidden");
+    });
+
+    logoutBtn.addEventListener("click", function () {
+      logoutModal.classList.remove("hidden");
+      logoutModal.classList.add("flex");
+    });
+
+    cancelLogoutBtn.addEventListener("click", function () {
+      logoutModal.classList.add("hidden");
+      logoutModal.classList.remove("flex");
+    });
+
+    confirmLogoutBtn.addEventListener("click", function () {
+      window.location.href = "index.html";
+    });
+
+    function getRenters() {
+      try {
+        const raw = localStorage.getItem(RENTERS_STORAGE_KEY);
+        const data = raw ? JSON.parse(raw) : [];
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function getDueDateThisMonth(scheduleRaw, referenceDate) {
+      if (!scheduleRaw) return null;
+      const baseDate = new Date(scheduleRaw + "T00:00:00");
+      if (Number.isNaN(baseDate.getTime())) return null;
+      const year = referenceDate.getFullYear();
+      const month = referenceDate.getMonth();
+      const day = baseDate.getDate();
+      const lastDay = new Date(year, month + 1, 0).getDate();
+      return new Date(year, month, Math.min(day, lastDay));
+    }
+
+    function renderDashboardData() {
+      const renters = getRenters();
+      totalRentersCount.textContent = String(renters.length);
+      let paidCount = 0;
+      let notPaidCount = 0;
+      let partialCount = 0;
+
+      const today = new Date();
+      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const dueSoon = [];
+      const duesByDay = {};
+
+      renters.forEach(function (renter) {
+        const status = (renter.paymentStatus || "NOT PAID").toUpperCase();
+        if (status === "PAID") paidCount += 1;
+        else if (status === "PARTIAL") partialCount += 1;
+        else notPaidCount += 1;
+
+        const dueDate = getDueDateThisMonth(renter.paymentScheduleRaw, today);
+        if (!dueDate) return;
+        const day = dueDate.getDate();
+        if (!duesByDay[day]) duesByDay[day] = [];
+        duesByDay[day].push(renter.roomNumber || "-");
+
+        const diffMs = dueDate.getTime() - startOfToday.getTime();
+        const diffDays = Math.floor(diffMs / 86400000);
+        if (diffDays >= 0 && diffDays <= 3) {
+          dueSoon.push({ roomNumber: renter.roomNumber || "-", diffDays, dueDate });
+        }
+      });
+
+      sidebarPaidCount.textContent = String(paidCount);
+      sidebarNotPaidCount.textContent = String(notPaidCount);
+      sidebarPartialCount.textContent = String(partialCount);
+
+      if (!dueSoon.length) {
+        dueSoonList.innerHTML = '<p class="text-slate-500">No upcoming dues.</p>';
+      } else {
+        dueSoon.sort(function (a, b) { return a.dueDate - b.dueDate; });
+        dueSoonList.innerHTML = dueSoon.map(function (item) {
+          const label = item.diffDays === 0 ? "Today" : item.diffDays === 1 ? "Tomorrow" : `In ${item.diffDays} days`;
+          return `<div class="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2"><span class="font-semibold text-brandBlue">Room ${item.roomNumber}</span> - ${label}</div>`;
+        }).join("");
+      }
+
+      calendarTitle.textContent = today.toLocaleDateString("en-PH", { month: "long", year: "numeric" });
+      paymentCalendarGrid.innerHTML = "";
+      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      const leadingBlankCount = firstDayOfMonth.getDay();
+
+      for (let i = 0; i < leadingBlankCount; i += 1) {
+        const blank = document.createElement("div");
+        blank.className = "min-h-16 rounded-lg border border-transparent";
+        paymentCalendarGrid.appendChild(blank);
+      }
+
+      for (let day = 1; day <= lastDayOfMonth.getDate(); day += 1) {
+        const card = document.createElement("div");
+        const isToday = day === today.getDate();
+        const rooms = duesByDay[day] || [];
+        card.className = "min-h-16 rounded-lg border p-1.5 text-left " + (isToday ? "border-blue-400 bg-blue-50" : "border-blue-100 bg-white");
+        const badges = rooms.length
+          ? rooms.map(function (room) { return `<span class="inline-block rounded bg-brandLight px-1.5 py-0.5 text-[10px] font-semibold text-brandBlue">#${room}</span>`; }).join(" ")
+          : '<span class="text-[10px] text-slate-400">-</span>';
+        card.innerHTML = `
+          <div class="mb-0.5 flex items-center justify-between">
+            <span class="text-[11px] font-semibold ${isToday ? "text-brandBlue" : "text-slate-600"}">${day}</span>
+          </div>
+          <div class="space-x-0.5 space-y-0.5">${badges}</div>
+        `;
+        paymentCalendarGrid.appendChild(card);
+      }
+    }
+
+    logoutModal.addEventListener("click", function (event) {
+      if (event.target === logoutModal) {
+        logoutModal.classList.add("hidden");
+        logoutModal.classList.remove("flex");
+      }
+    });
+
+    renderDashboardData();
+  </script>
+</body>
+</html>
