@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dorm Management System - Records</title>
+  <title>Dorm Management System - Payments</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -87,9 +87,10 @@
           <p class="menu-label mb-2 px-2">Overview</p>
           <ul class="space-y-1.5">
             <li><a href="dashboard.html" class="menu-link">DASHBOARD</a></li>
-            <li><a href="records.html" class="menu-link active">RECORDS</a></li>
+            <li><a href="records.html" class="menu-link active">PAYMENTS</a></li>
             <li><a href="logs.html" class="menu-link">TRANSACTION LOGS</a></li>
             <li><a href="renter.html" class="menu-link">TENANTS DATA</a></li>
+            <li><a href="rooms.html" class="menu-link">ROOMS</a></li>
           </ul>
         </nav>
       </div>
@@ -103,6 +104,7 @@
             </div>
           </div>
           <button id="logout-btn" class="w-full rounded-lg border border-blue-200 bg-white px-4 py-2.5 text-sm font-semibold text-brandBlue transition hover:bg-brandLight">Logout</button>
+          <button id="clear-cache-btn" class="mt-2 w-full rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50">Clear Cache</button>
         </div>
       </div>
     </aside>
@@ -110,7 +112,7 @@
     <main class="flex-1 w-full p-4 sm:p-6 lg:p-8">
       <div class="mb-4 flex items-center justify-between lg:hidden">
         <button id="sidebar-toggle" type="button" class="rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm font-semibold text-brandBlue">☰ Menu</button>
-        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Records</p>
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Payments</p>
       </div>
       <section class="rounded-2xl border border-blue-100 bg-white p-6 shadow-panel">
         <div class="mb-4 flex items-center justify-between gap-3">
@@ -190,6 +192,7 @@
     const sidebarToggle = document.getElementById("sidebar-toggle");
     const sidebarOverlay = document.getElementById("sidebar-overlay");
     const logoutBtn = document.getElementById("logout-btn");
+    const clearCacheBtn = document.getElementById("clear-cache-btn");
     const logoutModal = document.getElementById("logout-modal");
     const cancelLogoutBtn = document.getElementById("cancel-logout");
     const confirmLogoutBtn = document.getElementById("confirm-logout");
@@ -242,6 +245,13 @@
       logoutModal.classList.remove("flex");
     });
     confirmLogoutBtn.addEventListener("click", function () {
+      window.location.href = "index.html";
+    });
+    clearCacheBtn.addEventListener("click", function () {
+      const shouldClear = window.confirm("Clear all saved data? This cannot be undone.");
+      if (!shouldClear) return;
+      localStorage.clear();
+      sessionStorage.clear();
       window.location.href = "index.html";
     });
 
@@ -424,6 +434,11 @@
       renter.paymentMode = paymentModeInput.value;
       renter.paymentStatus = finalStatus;
       renter.paymentBalance = finalStatus === "PARTIAL" ? String(balance.toFixed(2)) : "";
+      renter.paymentMonthKey = (function () {
+        const now = new Date();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        return `${now.getFullYear()}-${month}`;
+      }());
       appendTransactionLog({
         id: Date.now() + "-" + Math.random().toString(16).slice(2),
         timestamp: new Date().toLocaleString("en-PH", {

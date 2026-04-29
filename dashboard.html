@@ -107,7 +107,7 @@
             </li>
             <li>
               <a href="records.html" class="menu-link">
-                RECORDS
+                PAYMENTS
               </a>
             </li>
             <li>
@@ -120,26 +120,14 @@
                 TENANTS DATA
               </a>
             </li>
+            <li>
+              <a href="rooms.html" class="menu-link">
+                ROOMS
+              </a>
+            </li>
           </ul>
         </nav>
 
-        <div class="sidebar-card mt-4 p-3">
-          <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">This Month Status</p>
-          <div class="mt-2 space-y-1.5 text-xs">
-            <div class="flex items-center justify-between rounded-md border border-green-100 bg-green-50 px-2.5 py-1.5">
-              <span class="font-semibold text-green-700">PAID</span>
-              <span id="sidebar-paid-count" class="font-bold text-green-800">0</span>
-            </div>
-            <div class="flex items-center justify-between rounded-md border border-red-100 bg-red-50 px-2.5 py-1.5">
-              <span class="font-semibold text-red-700">NOT PAID</span>
-              <span id="sidebar-not-paid-count" class="font-bold text-red-800">0</span>
-            </div>
-            <div class="flex items-center justify-between rounded-md border border-orange-100 bg-orange-50 px-2.5 py-1.5">
-              <span class="font-semibold text-orange-700">PARTIAL</span>
-              <span id="sidebar-partial-count" class="font-bold text-orange-800">0</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       <div class="border-t border-[var(--sidebar-border)] p-6">
@@ -155,6 +143,9 @@
           </div>
           <button id="logout-btn" class="w-full rounded-lg border border-blue-200 bg-white px-4 py-2.5 text-sm font-semibold text-brandBlue transition hover:bg-brandLight active:scale-[0.99]">
             Logout
+          </button>
+          <button id="clear-cache-btn" class="mt-2 w-full rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 active:scale-[0.99]">
+            Clear Cache
           </button>
         </div>
       </div>
@@ -174,9 +165,20 @@
             <p class="mt-2 text-sm text-slate-500">All renters currently saved in TENANTS DATA.</p>
           </article>
           <article class="rounded-2xl border border-blue-100 bg-white p-6 shadow-panel">
-            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Due Soon (Next 3 Days)</p>
-            <div id="due-soon-list" class="mt-2 space-y-2 text-sm text-slate-700">
-              <p class="text-slate-500">No upcoming dues.</p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">This Month Status</p>
+            <div class="mt-3 space-y-2 text-sm">
+              <div class="flex items-center justify-between rounded-lg border border-green-100 bg-green-50 px-3 py-2">
+                <span class="font-semibold text-green-700">PAID</span>
+                <span id="main-paid-count" class="font-bold text-green-800">0</span>
+              </div>
+              <div class="flex items-center justify-between rounded-lg border border-red-100 bg-red-50 px-3 py-2">
+                <span class="font-semibold text-red-700">NOT PAID</span>
+                <span id="main-not-paid-count" class="font-bold text-red-800">0</span>
+              </div>
+              <div class="flex items-center justify-between rounded-lg border border-orange-100 bg-orange-50 px-3 py-2">
+                <span class="font-semibold text-orange-700">PARTIAL</span>
+                <span id="main-partial-count" class="font-bold text-orange-800">0</span>
+              </div>
             </div>
           </article>
         </div>
@@ -185,9 +187,13 @@
           <div class="mb-4 flex items-center justify-between">
             <div>
               <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Payment Calendar</p>
-              <h3 id="calendar-title" class="text-lg font-semibold text-brandBlue">Month</h3>
+              <div class="mt-1 flex items-center gap-2">
+                <button id="calendar-prev-month" class="rounded-md border border-blue-200 bg-white px-2.5 py-1 text-xs font-semibold text-brandBlue hover:bg-blue-50" type="button">Prev</button>
+                <h3 id="calendar-title" class="text-lg font-semibold text-brandBlue">Month</h3>
+                <button id="calendar-next-month" class="rounded-md border border-blue-200 bg-white px-2.5 py-1 text-xs font-semibold text-brandBlue hover:bg-blue-50" type="button">Next</button>
+              </div>
             </div>
-            <p class="text-xs text-slate-500">Room numbers are shown on due dates.</p>
+            <p class="text-xs text-slate-500">Green room number means paid for selected month.</p>
           </div>
           <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-semibold uppercase tracking-wide text-slate-500">
             <p>Sun</p><p>Mon</p><p>Tue</p><p>Wed</p><p>Thu</p><p>Fri</p><p>Sat</p>
@@ -212,6 +218,7 @@
   <script>
     const userNameLabel = document.getElementById("sidebar-username");
     const logoutBtn = document.getElementById("logout-btn");
+    const clearCacheBtn = document.getElementById("clear-cache-btn");
     const avatarBadge = document.getElementById("avatar-badge");
     const appSidebar = document.getElementById("app-sidebar");
     const sidebarToggle = document.getElementById("sidebar-toggle");
@@ -220,13 +227,15 @@
     const cancelLogoutBtn = document.getElementById("cancel-logout");
     const confirmLogoutBtn = document.getElementById("confirm-logout");
     const totalRentersCount = document.getElementById("total-renters-count");
-    const dueSoonList = document.getElementById("due-soon-list");
+    const mainPaidCount = document.getElementById("main-paid-count");
+    const mainNotPaidCount = document.getElementById("main-not-paid-count");
+    const mainPartialCount = document.getElementById("main-partial-count");
     const calendarTitle = document.getElementById("calendar-title");
+    const calendarPrevMonthBtn = document.getElementById("calendar-prev-month");
+    const calendarNextMonthBtn = document.getElementById("calendar-next-month");
     const paymentCalendarGrid = document.getElementById("payment-calendar-grid");
-    const sidebarPaidCount = document.getElementById("sidebar-paid-count");
-    const sidebarNotPaidCount = document.getElementById("sidebar-not-paid-count");
-    const sidebarPartialCount = document.getElementById("sidebar-partial-count");
     const RENTERS_STORAGE_KEY = "dmsRenters";
+    const selectedCalendarDate = new Date();
     const savedUsername = localStorage.getItem("dmsUsername");
 
     if (savedUsername && savedUsername.trim()) {
@@ -271,6 +280,13 @@
     confirmLogoutBtn.addEventListener("click", function () {
       window.location.href = "index.html";
     });
+    clearCacheBtn.addEventListener("click", function () {
+      const shouldClear = window.confirm("Clear all saved data? This cannot be undone.");
+      if (!shouldClear) return;
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = "index.html";
+    });
 
     function getRenters() {
       try {
@@ -293,6 +309,24 @@
       return new Date(year, month, Math.min(day, lastDay));
     }
 
+    function getMonthKey(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      return `${year}-${month}`;
+    }
+
+    function getMonthlyPaymentStatus(renter, referenceDate) {
+      const currentMonthKey = getMonthKey(referenceDate);
+      const renterMonthKey = renter.paymentMonthKey || "";
+      if (!renterMonthKey) {
+        const today = new Date();
+        const isCurrentMonth = referenceDate.getFullYear() === today.getFullYear() && referenceDate.getMonth() === today.getMonth();
+        return isCurrentMonth ? (renter.paymentStatus || "NOT PAID").toUpperCase() : "NOT PAID";
+      }
+      if (renterMonthKey !== currentMonthKey) return "NOT PAID";
+      return (renter.paymentStatus || "NOT PAID").toUpperCase();
+    }
+
     function renderDashboardData() {
       const renters = getRenters();
       totalRentersCount.textContent = String(renters.length);
@@ -301,47 +335,34 @@
       let partialCount = 0;
 
       const today = new Date();
-      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const dueSoon = [];
+      const viewingDate = new Date(selectedCalendarDate.getFullYear(), selectedCalendarDate.getMonth(), 1);
       const duesByDay = {};
 
       renters.forEach(function (renter) {
-        const status = (renter.paymentStatus || "NOT PAID").toUpperCase();
+        const status = getMonthlyPaymentStatus(renter, today);
         if (status === "PAID") paidCount += 1;
         else if (status === "PARTIAL") partialCount += 1;
         else notPaidCount += 1;
 
-        const dueDate = getDueDateThisMonth(renter.paymentScheduleRaw, today);
+        const dueDate = getDueDateThisMonth(renter.paymentScheduleRaw, viewingDate);
         if (!dueDate) return;
         const day = dueDate.getDate();
         if (!duesByDay[day]) duesByDay[day] = [];
-        duesByDay[day].push(renter.roomNumber || "-");
+        duesByDay[day].push({
+          roomNumber: renter.roomNumber || "-",
+          status: getMonthlyPaymentStatus(renter, viewingDate)
+        });
 
-        const diffMs = dueDate.getTime() - startOfToday.getTime();
-        const diffDays = Math.floor(diffMs / 86400000);
-        if (diffDays >= 0 && diffDays <= 3) {
-          dueSoon.push({ roomNumber: renter.roomNumber || "-", diffDays, dueDate });
-        }
       });
 
-      sidebarPaidCount.textContent = String(paidCount);
-      sidebarNotPaidCount.textContent = String(notPaidCount);
-      sidebarPartialCount.textContent = String(partialCount);
+      mainPaidCount.textContent = String(paidCount);
+      mainNotPaidCount.textContent = String(notPaidCount);
+      mainPartialCount.textContent = String(partialCount);
 
-      if (!dueSoon.length) {
-        dueSoonList.innerHTML = '<p class="text-slate-500">No upcoming dues.</p>';
-      } else {
-        dueSoon.sort(function (a, b) { return a.dueDate - b.dueDate; });
-        dueSoonList.innerHTML = dueSoon.map(function (item) {
-          const label = item.diffDays === 0 ? "Today" : item.diffDays === 1 ? "Tomorrow" : `In ${item.diffDays} days`;
-          return `<div class="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2"><span class="font-semibold text-brandBlue">Room ${item.roomNumber}</span> - ${label}</div>`;
-        }).join("");
-      }
-
-      calendarTitle.textContent = today.toLocaleDateString("en-PH", { month: "long", year: "numeric" });
+      calendarTitle.textContent = viewingDate.toLocaleDateString("en-PH", { month: "long", year: "numeric" });
       paymentCalendarGrid.innerHTML = "";
-      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      const firstDayOfMonth = new Date(viewingDate.getFullYear(), viewingDate.getMonth(), 1);
+      const lastDayOfMonth = new Date(viewingDate.getFullYear(), viewingDate.getMonth() + 1, 0);
       const leadingBlankCount = firstDayOfMonth.getDay();
 
       for (let i = 0; i < leadingBlankCount; i += 1) {
@@ -352,11 +373,19 @@
 
       for (let day = 1; day <= lastDayOfMonth.getDate(); day += 1) {
         const card = document.createElement("div");
-        const isToday = day === today.getDate();
+        const isViewingCurrentMonth = viewingDate.getFullYear() === today.getFullYear() && viewingDate.getMonth() === today.getMonth();
+        const isToday = isViewingCurrentMonth && day === today.getDate();
         const rooms = duesByDay[day] || [];
         card.className = "min-h-16 rounded-lg border p-1.5 text-left " + (isToday ? "border-blue-400 bg-blue-50" : "border-blue-100 bg-white");
         const badges = rooms.length
-          ? rooms.map(function (room) { return `<span class="inline-block rounded bg-brandLight px-1.5 py-0.5 text-[10px] font-semibold text-brandBlue">#${room}</span>`; }).join(" ")
+          ? rooms.map(function (roomEntry) {
+            const isPaid = roomEntry.status === "PAID";
+            const badgeClass = isPaid
+              ? "bg-green-100 text-green-700"
+              : "bg-brandLight text-brandBlue";
+            const badgeLabel = isPaid ? `✓ #${roomEntry.roomNumber}` : `#${roomEntry.roomNumber}`;
+            return `<span class="inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold ${badgeClass}">${badgeLabel}</span>`;
+          }).join(" ")
           : '<span class="text-[10px] text-slate-400">-</span>';
         card.innerHTML = `
           <div class="mb-0.5 flex items-center justify-between">
@@ -373,6 +402,14 @@
         logoutModal.classList.add("hidden");
         logoutModal.classList.remove("flex");
       }
+    });
+    calendarPrevMonthBtn.addEventListener("click", function () {
+      selectedCalendarDate.setMonth(selectedCalendarDate.getMonth() - 1);
+      renderDashboardData();
+    });
+    calendarNextMonthBtn.addEventListener("click", function () {
+      selectedCalendarDate.setMonth(selectedCalendarDate.getMonth() + 1);
+      renderDashboardData();
     });
 
     renderDashboardData();

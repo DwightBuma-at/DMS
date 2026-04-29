@@ -77,7 +77,7 @@
   </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-white to-blue-50 text-slateText">
-  <div class="relative flex min-h-screen">
+  <div id="tenants-app-shell" class="relative flex min-h-screen">
     <aside id="app-sidebar" class="sidebar-shell fixed inset-y-0 left-0 z-40 w-80 -translate-x-full shadow-panel transition-transform duration-200 lg:static lg:translate-x-0 flex flex-col justify-between">
       <div class="p-6">
         <div class="sidebar-card mb-7 p-4">
@@ -87,9 +87,10 @@
           <p class="menu-label mb-2 px-2">Overview</p>
           <ul class="space-y-1.5">
             <li><a href="dashboard.html" class="menu-link">DASHBOARD</a></li>
-            <li><a href="records.html" class="menu-link">RECORDS</a></li>
+            <li><a href="records.html" class="menu-link">PAYMENTS</a></li>
             <li><a href="logs.html" class="menu-link">TRANSACTION LOGS</a></li>
             <li><a href="renter.html" class="menu-link active">TENANTS DATA</a></li>
+            <li><a href="rooms.html" class="menu-link">ROOMS</a></li>
           </ul>
         </nav>
       </div>
@@ -103,6 +104,7 @@
             </div>
           </div>
           <button id="logout-btn" class="w-full rounded-lg border border-blue-200 bg-white px-4 py-2.5 text-sm font-semibold text-brandBlue transition hover:bg-brandLight">Logout</button>
+          <button id="clear-cache-btn" class="mt-2 w-full rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50">Clear Cache</button>
         </div>
       </div>
     </aside>
@@ -210,11 +212,9 @@
           <div class="grid gap-3 md:grid-cols-2">
             <div class="space-y-1">
               <p class="text-xs font-semibold text-slate-600">Room Number</p>
-              <input name="roomNumber" required placeholder="Room Number" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
-            </div>
-            <div class="space-y-1">
-              <p class="text-xs font-semibold text-slate-600">Floor (Optional)</p>
-              <input name="floor" placeholder="Floor" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+              <select name="roomNumber" required class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                <option value="">Select Room Number</option>
+              </select>
             </div>
             <div class="space-y-1">
               <p class="text-xs font-semibold text-slate-600">Monthly Rent</p>
@@ -290,6 +290,20 @@
       </div>
     </div>
   </div>
+  <div id="tenant-password-modal" class="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/50 px-4">
+    <div class="w-full max-w-sm rounded-2xl border border-blue-100 bg-white p-6 shadow-panel">
+      <h3 class="text-lg font-semibold text-brandBlue">Tenants Data Access</h3>
+      <p class="mt-2 text-sm text-[var(--text-soft)]">Enter password to continue.</p>
+      <div class="mt-4 space-y-2">
+        <input id="tenant-password-input" type="password" placeholder="Password" class="w-full rounded-lg border border-blue-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+        <p id="tenant-password-error" class="hidden text-sm font-medium text-red-600">Incorrect password. Try again.</p>
+      </div>
+      <div class="mt-5 flex justify-end gap-2">
+        <button id="tenant-password-cancel" class="rounded-lg border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-[var(--text-main)] hover:bg-blue-50">Cancel</button>
+        <button id="tenant-password-submit" class="rounded-lg bg-brandBlue px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Enter</button>
+      </div>
+    </div>
+  </div>
   <script>
     const userNameLabel = document.getElementById("sidebar-username");
     const avatarBadge = document.getElementById("avatar-badge");
@@ -297,6 +311,7 @@
     const sidebarToggle = document.getElementById("sidebar-toggle");
     const sidebarOverlay = document.getElementById("sidebar-overlay");
     const logoutBtn = document.getElementById("logout-btn");
+    const clearCacheBtn = document.getElementById("clear-cache-btn");
     const logoutModal = document.getElementById("logout-modal");
     const cancelLogoutBtn = document.getElementById("cancel-logout");
     const confirmLogoutBtn = document.getElementById("confirm-logout");
@@ -324,7 +339,17 @@
     const confirmActionMessage = document.getElementById("confirm-action-message");
     const confirmActionCancel = document.getElementById("confirm-action-cancel");
     const confirmActionOk = document.getElementById("confirm-action-ok");
+    const tenantPasswordModal = document.getElementById("tenant-password-modal");
+    const tenantPasswordInput = document.getElementById("tenant-password-input");
+    const tenantPasswordError = document.getElementById("tenant-password-error");
+    const tenantPasswordCancel = document.getElementById("tenant-password-cancel");
+    const tenantPasswordSubmit = document.getElementById("tenant-password-submit");
+    const tenantsAppShell = document.getElementById("tenants-app-shell");
     const RENTERS_STORAGE_KEY = "dmsRenters";
+    const ROOMS_STORAGE_KEY = "dmsRooms";
+    const TENANTS_ACCESS_KEY = "dmsTenantsAuth";
+    const TENANTS_PAGE_PASSWORD = "123";
+    const roomNumberSelect = renterForm.querySelector('select[name="roomNumber"]');
     let confirmActionHandler = null;
     let activeDetailRow = null;
     const savedUsername = localStorage.getItem("dmsUsername");
@@ -364,7 +389,15 @@
     confirmLogoutBtn.addEventListener("click", function () {
       window.location.href = "index.html";
     });
+    clearCacheBtn.addEventListener("click", function () {
+      const shouldClear = window.confirm("Clear all saved data? This cannot be undone.");
+      if (!shouldClear) return;
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = "index.html";
+    });
     function openRenterModal() {
+      populateRoomSelectOptions(roomNumberSelect, "");
       renterModal.classList.remove("hidden");
       renterModal.classList.add("flex");
     }
@@ -565,6 +598,55 @@
       }
     }
 
+    function getStoredRooms() {
+      try {
+        const raw = localStorage.getItem(ROOMS_STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function getOccupiedRoomNumbers(excludeRoom) {
+      return new Set(getStoredRenters().map(function (renter) {
+        return (renter.roomNumber || "").trim();
+      }).filter(function (roomNumber) {
+        return roomNumber && roomNumber !== (excludeRoom || "");
+      }));
+    }
+
+    function populateRoomSelectOptions(selectEl, selectedValue) {
+      if (!selectEl) return;
+      const rooms = getStoredRooms();
+      const occupiedRooms = getOccupiedRoomNumbers(selectedValue);
+      const currentValue = selectedValue || "";
+      selectEl.innerHTML = '<option value="">Select Room Number</option>';
+
+      rooms.forEach(function (room) {
+        const roomNumber = String(room.roomNumber || "").trim();
+        if (!roomNumber) return;
+        const option = document.createElement("option");
+        option.value = roomNumber;
+        option.textContent = occupiedRooms.has(roomNumber) ? `${roomNumber} (OCCUPIED)` : `${roomNumber} (AVAILABLE)`;
+        option.disabled = occupiedRooms.has(roomNumber);
+        selectEl.appendChild(option);
+      });
+
+      if (currentValue) {
+        const hasOption = Array.from(selectEl.options).some(function (option) {
+          return option.value === currentValue;
+        });
+        if (!hasOption) {
+          const fallbackOption = document.createElement("option");
+          fallbackOption.value = currentValue;
+          fallbackOption.textContent = `${currentValue} (NOT IN ROOMS LIST)`;
+          selectEl.appendChild(fallbackOption);
+        }
+      }
+      selectEl.value = currentValue;
+    }
+
     function persistTableRows() {
       const rows = renterTableBody.querySelectorAll('tr[data-renter-row="true"]');
       const renters = Array.from(rows).map(function (row) {
@@ -580,7 +662,6 @@
           renterPeople: Array.isArray(data.renterPeople) ? data.renterPeople : [],
           emergencyPeople: Array.isArray(data.emergencyPeople) ? data.emergencyPeople : [],
           roomNumber: data.roomNumber || "",
-          floor: data.floor || "-",
           roomRentRaw: data.roomRentRaw || "",
           waterType: data.waterType || "",
           waterAmount: data.waterAmount || "",
@@ -694,11 +775,9 @@
           <div class="grid gap-2 md:grid-cols-2">
             <div class="space-y-1">
               <p class="text-xs font-semibold text-slate-600">Room Number</p>
-              <input data-field="roomNumber" disabled value="${escapeHtml(data.roomNumber)}" class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm">
-            </div>
-            <div class="space-y-1">
-              <p class="text-xs font-semibold text-slate-600">Floor</p>
-              <input data-field="floor" disabled value="${escapeHtml(data.floor)}" class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm">
+              <select data-field="roomNumber" disabled class="w-full rounded-lg border border-blue-200 px-3 py-2 text-sm">
+                <option value="">Select Room Number</option>
+              </select>
             </div>
             <div class="space-y-1">
               <p class="text-xs font-semibold text-slate-600">Monthly Rent (PHP)</p>
@@ -779,6 +858,8 @@
       }
       peopleCardsWrap.classList.toggle("lg:grid-cols-1", maxPeople === 1);
       peopleCardsWrap.classList.toggle("lg:grid-cols-2", maxPeople > 1);
+      const roomNumberField = viewDetailsContent.querySelector('[data-field="roomNumber"]');
+      populateRoomSelectOptions(roomNumberField, data.roomNumber || "");
 
       viewDetailsContent.querySelectorAll("section").forEach(function (sectionEl) {
         const originalValues = {};
@@ -885,6 +966,32 @@
       viewDetailsModal.classList.remove("flex");
     }
 
+    function unlockTenantsPage() {
+      sessionStorage.setItem(TENANTS_ACCESS_KEY, "1");
+      tenantPasswordModal.classList.add("hidden");
+      document.body.classList.remove("overflow-hidden");
+      tenantsAppShell.classList.remove("blur-sm", "pointer-events-none", "select-none");
+    }
+
+    function handleTenantsPasswordSubmit() {
+      if ((tenantPasswordInput.value || "").trim() === TENANTS_PAGE_PASSWORD) {
+        tenantPasswordError.classList.add("hidden");
+        unlockTenantsPage();
+      } else {
+        tenantPasswordError.classList.remove("hidden");
+        tenantPasswordInput.focus();
+        tenantPasswordInput.select();
+      }
+    }
+
+    function handleTenantsPasswordCancel() {
+      sessionStorage.removeItem(TENANTS_ACCESS_KEY);
+      window.location.href = "dashboard.html";
+    }
+
+    document.body.classList.add("overflow-hidden");
+    tenantsAppShell.classList.add("blur-sm", "pointer-events-none", "select-none");
+    tenantPasswordInput.focus();
     bindNumericOnly(document);
 
     openRenterModalBtn.addEventListener("click", openRenterModal);
@@ -907,7 +1014,21 @@
     confirmActionOk.addEventListener("click", function () {
       if (confirmActionHandler) confirmActionHandler();
     });
+    tenantPasswordSubmit.addEventListener("click", handleTenantsPasswordSubmit);
+    tenantPasswordCancel.addEventListener("click", handleTenantsPasswordCancel);
+    tenantPasswordInput.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        handleTenantsPasswordSubmit();
+      }
+    });
     loadStoredRenterRows();
+    populateRoomSelectOptions(roomNumberSelect, "");
+    window.addEventListener("storage", function (event) {
+      if (event.key === ROOMS_STORAGE_KEY || event.key === RENTERS_STORAGE_KEY) {
+        populateRoomSelectOptions(roomNumberSelect, roomNumberSelect.value || "");
+      }
+    });
 
     renterForm.addEventListener("submit", function (event) {
       event.preventDefault();
@@ -955,7 +1076,6 @@
         renterPeople,
         emergencyPeople,
         roomNumber: formData.get("roomNumber"),
-        floor: formData.get("floor") || "-",
         roomRentRaw: formData.get("roomRent"),
         waterType: formData.get("waterType"),
         waterAmount: formData.get("waterAmount"),
@@ -976,7 +1096,6 @@
         if (title || rate) optionalParts.push((title || "Untitled") + ": " + (rate ? formatPeso(rate) : "-"));
       }
       rowData.optionalCharges = optionalParts.length ? optionalParts.join(", ") : "-";
-      const terms = formatRoomTermsForDisplay(rowData);
 
       const tr = buildRenterRow(rowData);
       askConfirmation("Save renter and add to the table?", function () {
@@ -989,6 +1108,7 @@
         renterPairList.querySelectorAll(".renter-pair-card").forEach(function (card, index) {
           if (index > 0) card.remove();
         });
+        populateRoomSelectOptions(roomNumberSelect, "");
         toggleUtilityAmount(waterTypeSelect, waterAmountInput);
         toggleUtilityAmount(lightTypeSelect, lightAmountInput);
         applyTableSearch();

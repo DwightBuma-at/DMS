@@ -86,9 +86,10 @@
           <p class="menu-label mb-2 px-2">Overview</p>
           <ul class="space-y-1.5">
             <li><a href="dashboard.html" class="menu-link">DASHBOARD</a></li>
-            <li><a href="records.html" class="menu-link">RECORDS</a></li>
+            <li><a href="records.html" class="menu-link">PAYMENTS</a></li>
             <li><a href="logs.html" class="menu-link active">TRANSACTION LOGS</a></li>
             <li><a href="renter.html" class="menu-link">TENANTS DATA</a></li>
+            <li><a href="rooms.html" class="menu-link">ROOMS</a></li>
           </ul>
         </nav>
       </div>
@@ -102,6 +103,7 @@
             </div>
           </div>
           <button id="logout-btn" class="w-full rounded-lg border border-blue-200 bg-white px-4 py-2.5 text-sm font-semibold text-brandBlue transition hover:bg-brandLight">Logout</button>
+          <button id="clear-cache-btn" class="mt-2 w-full rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50">Clear Cache</button>
         </div>
       </div>
     </aside>
@@ -160,6 +162,7 @@
     const sidebarToggle = document.getElementById("sidebar-toggle");
     const sidebarOverlay = document.getElementById("sidebar-overlay");
     const logoutBtn = document.getElementById("logout-btn");
+    const clearCacheBtn = document.getElementById("clear-cache-btn");
     const logoutModal = document.getElementById("logout-modal");
     const cancelLogoutBtn = document.getElementById("cancel-logout");
     const confirmLogoutBtn = document.getElementById("confirm-logout");
@@ -321,6 +324,13 @@
       logoutModal.classList.remove("flex");
     });
     confirmLogoutBtn.addEventListener("click", function () {
+      window.location.href = "index.html";
+    });
+    clearCacheBtn.addEventListener("click", function () {
+      const shouldClear = window.confirm("Clear all saved data? This cannot be undone.");
+      if (!shouldClear) return;
+      localStorage.clear();
+      sessionStorage.clear();
       window.location.href = "index.html";
     });
 
